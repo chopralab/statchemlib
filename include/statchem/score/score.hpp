@@ -79,6 +79,7 @@ class Score {
     Score& define_composition(const std::set<int>& receptor_idatm_types,
                               const std::set<int>& ligand_idatm_types);
     Score& process_distributions_file(const std::string& distributions_file);
+    Score& process_distributions(const std::vector<std::string>& distributions);
     Score& compile_scoring_function();
 
     friend std::ostream& operator<<(std::ostream& stream,

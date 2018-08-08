@@ -4,8 +4,8 @@
 #include <boost/filesystem/path.hpp>
 #include <functional>
 #include <string>
-#include "statchem/helper/help.hpp"
 #include "statchem/fileio/inout.hpp"
+#include "statchem/helper/help.hpp"
 #include "statchem/helper/path.hpp"
 #include "statchem/molib/molecule.hpp"
 using namespace std;
@@ -93,6 +93,11 @@ Array1d<double> Score::compute_energy(const molib::Atom::Grid& gridrec,
 
 Score& Score::define_composition(const set<int>& receptor_idatm_types,
                                  const set<int>& ligand_idatm_types) {
+
+    if (__prot_lig_pairs.size()) {
+        throw std::runtime_error("Attempt to redefine the compositions!");
+    }
+
     set<int> idatm_types;
     for (auto& key : receptor_idatm_types) idatm_types.insert(key);
     for (auto& key : ligand_idatm_types) idatm_types.insert(key);
@@ -126,13 +131,23 @@ Score& Score::define_composition(const set<int>& receptor_idatm_types,
 }
 
 Score& Score::process_distributions_file(const string& distributions_file) {
-    Benchmark bench;
-    log_step << "processing combined histogram ...\n";
     vector<string> distributions_file_raw;
     fileio::read_file(distributions_file, distributions_file_raw);
+
+    process_distributions(distributions_file_raw);
+    return *this;
+}
+
+Score& Score::process_distributions(const vector<string>& distributions) {
+    Benchmark bench;
+    log_step << "processing combined histogram ...\n";
     const bool rad_or_raw(__rad_or_raw == "normalized_frequency");
 
-    for (string& line : distributions_file_raw) {
+    if (__gij_of_r_numerator.size()) {
+        throw std::runtime_error("Attempt to process distribution twice!");
+    }
+
+    for (const string& line : distributions) {
         stringstream ss(line);  // dist_file is simply too big to use boost
         string atom_1, atom_2;
         double lower_bound, upper_bound, quantity;
