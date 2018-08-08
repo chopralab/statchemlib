@@ -64,6 +64,7 @@ include_directories(BEFORE include)
 
 # This order is important as CMAKE needs to find certain files
 add_subdirectory(lib)
+add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(tests)
