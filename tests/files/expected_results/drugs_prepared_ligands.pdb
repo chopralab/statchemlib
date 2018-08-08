@@ -1,0 +1,226 @@
+REMARK   4 NRPDB 
+REMARK   5 MOLECULE random
+REMARK   6 ASYMMETRIC UNIT 0
+MODEL        1
+HETATM    1  O1  LIG A   1      -6.688  -9.428   0.613  1.00  1.00           O    Oar   os aps={{1,32},{2,0},{3,64}} prop={{AR4,1},{RG5,1},{ag,1},{ag5,1}}
+HETATM    2  C1  LIG A   1      -5.961 -10.571   0.522  1.00  1.00           C    Car   cc aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR4,1},{RG5,1},{ag,1},{ag5,1}}
+HETATM    3  C2  LIG A   1      -4.646 -10.299   0.131  1.00  1.00           C    Car   cd aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR4,1},{RG5,1},{ag,1},{ag5,1}}
+HETATM    4  C3  LIG A   1      -4.597  -8.919  -0.015  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR4,1},{RG5,1},{RG6,1},{ag,2},{ag5,1},{ag6,1}}
+HETATM    5  C4  LIG A   1      -5.855  -8.414   0.289  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR4,1},{RG5,1},{RG6,1},{ag,2},{ag5,1},{ag6,1}}
+HETATM    6  C5  LIG A   1      -3.560  -8.049  -0.388  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM    7  N1  LIG A   1      -6.101  -7.083   0.244  1.00  1.00           N     N2   nb aps={{2,4},{3,0},{4,2}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM    8  C6  LIG A   1      -5.120  -6.204  -0.104  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM    9  C7  LIG A   1      -3.811  -6.651  -0.441  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   10  C8  LIG A   1      -2.776  -5.748  -0.812  1.00  1.00           C     C2    c aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   11  N2  LIG A   1      -2.785  -4.450  -0.363  1.00  1.00           N    Npl    n aps={{2,32},{3,0},{4,1},{5,2}} prop={{NG,1}}
+HETATM   12  O2  LIG A   1      -1.845  -6.196  -1.522  1.00  1.00           O     O2    o aps={{1,1},{2,0},{3,64}} prop={{NG,1}}
+HETATM   13  C9  LIG A   1      -1.882  -3.457  -0.526  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   14  C10 LIG A   1      -0.742  -3.498  -1.456  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   15  C11 LIG A   1      -2.053  -2.377   0.259  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   16  N3  LIG A   1       0.591  -3.853  -0.850  1.00  1.00           N    N3+   n4 aps={{3,64},{4,0},{5,64}} prop={{NG,1}}
+HETATM   17  C12 LIG A   1       0.605  -4.986   0.133  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   18  C13 LIG A   1       1.667  -4.014  -1.884  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   19  N4  LIG A   1      -3.605 -11.105  -0.035  1.00  1.00           N     N2   nh aps={{2,4},{3,0},{4,2}} prop={{NG,1}}
+HETATM   20  C14 LIG A   1      -3.495 -12.369  -0.234  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   21  N5  LIG A   1      -2.278 -12.859  -0.289  1.00  1.00           N    Npl   nh aps={{2,32},{3,0},{4,1},{5,2}} prop={{NG,1}}
+HETATM   22  N6  LIG A   1      -4.500 -13.205  -0.401  1.00  1.00           N    Npl   nh aps={{2,32},{3,0},{4,1},{5,2}} prop={{NG,1}}
+HETATM   23  F1  LIG A   1       1.747  -4.951   0.897  1.00  1.00           F      F    f aps={{0,64},{1,0},{2,64}} prop={{NG,1}}
+HETATM   24  O3  LIG A   1       1.794  -2.830  -2.700  1.00  1.00           O     O3   os aps={{1,32},{2,0},{3,64}} prop={{NG,1}}
+HETATM   25  P1  LIG A   1       2.921  -2.909  -3.832  1.00  1.00           P    Pac   p5 aps={{3,64},{4,1},{5,0},{6,32}} prop={{NG,1}}
+HETATM   26  O4  LIG A   1       4.338  -3.133  -3.158  1.00  1.00           O     O3   oh aps={{1,32},{2,0},{3,64}} prop={{NG,1}}
+HETATM   27  O5  LIG A   1       2.955  -1.511  -4.578  1.00  1.00           O     O3   oh aps={{1,32},{2,0},{3,64}} prop={{NG,1}}
+HETATM   28  O6  LIG A   1       2.639  -3.978  -4.796  1.00  1.00           O    O3-    o aps={{1,1},{2,0},{3,64}} prop={{NG,1}}
+TER
+REMARK   8 RIGID 0 c1 c2 c3 c4 c5 c6 c7 c8 c9 j10 j19
+REMARK   8 RIGID 1 c10 c11 c12 j9 j13
+REMARK   8 RIGID 2 c13 c15 j11 j14
+REMARK   8 RIGID -1 c14 j13 j16
+REMARK   8 RIGID 3 c16 j14 j17 j18
+REMARK   8 RIGID 4 c17 c23 j16
+REMARK   8 RIGID -1 c18 j16 j24
+REMARK   8 RIGID -1 c19 j3 j20
+REMARK   8 RIGID 5 c20 j19 j21 j22
+REMARK   8 RIGID -1 c24 j18 j25
+REMARK   8 RIGID 6 c25 j24 j26 j27 j28
+REMARK   8 ROTA sp2-aromatic 3 19
+REMARK   8 ROTA sp2-aromatic 9 10
+REMARK   8 ROTA sp2-npl 11 13
+REMARK   8 ROTA sp3-sp2 13 14
+REMARK   8 ROTA sp3-n4 14 16
+REMARK   8 ROTA sp3-n4 16 17
+REMARK   8 ROTA sp3-n4 16 18
+REMARK   8 ROTA sp3-sp3 18 24
+REMARK   8 ROTA sp2-sp2 19 20
+REMARK   8 ROTA sp2-npl 20 21
+REMARK   8 ROTA sp2-npl 20 22
+REMARK   8 ROTA phosph-ester 24 25
+REMARK   8 ROTA phosph-ester 25 26
+REMARK   8 ROTA phosph-ester 25 27
+REMARK   8 ROTA phosph-ester 25 28
+REMARK   8 BONDTYPE 1 sb 1 2
+REMARK   8 BONDTYPE 1 sb 1 5
+REMARK   8 BONDTYPE 2 db 2 3
+REMARK   8 BONDTYPE 1 sb 3 4
+REMARK   8 BONDTYPE 1 sb 3 19
+REMARK   8 BONDTYPE 1 sb 4 5
+REMARK   8 BONDTYPE 2 db 5 7
+REMARK   8 BONDTYPE 2 db 6 4
+REMARK   8 BONDTYPE 1 sb 6 9
+REMARK   8 BONDTYPE 1 sb 7 8
+REMARK   8 BONDTYPE 2 db 8 9
+REMARK   8 BONDTYPE 1 sb 9 10
+REMARK   8 BONDTYPE 1 sb 10 11
+REMARK   8 BONDTYPE 2 db 10 12
+REMARK   8 BONDTYPE 1 sb 11 13
+REMARK   8 BONDTYPE 1 sb 13 14
+REMARK   8 BONDTYPE 2 db 13 15
+REMARK   8 BONDTYPE 1 sb 14 16
+REMARK   8 BONDTYPE 1 sb 16 17
+REMARK   8 BONDTYPE 1 sb 16 18
+REMARK   8 BONDTYPE 1 sb 17 23
+REMARK   8 BONDTYPE 1 sb 18 24
+REMARK   8 BONDTYPE 2 db 19 20
+REMARK   8 BONDTYPE 1 sb 20 21
+REMARK   8 BONDTYPE 1 sb 20 22
+REMARK   8 BONDTYPE 1 sb 24 25
+REMARK   8 BONDTYPE 1 sb 25 26
+REMARK   8 BONDTYPE 1 sb 25 27
+REMARK   8 BONDTYPE 2 db 25 28
+ENDMDL
+REMARK   6 END
+REMARK   5 END
+REMARK   5 MOLECULE tibolone
+REMARK   6 ASYMMETRIC UNIT 0
+MODEL        1
+HETATM    1  C1  LIG A   1      -4.856   3.745   0.733  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM    2  C2  LIG A   1      -4.031   2.489   1.121  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    3  C3  LIG A   1      -3.076   2.102  -0.050  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    4  C4  LIG A   1      -2.157   1.046   0.398  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG6,2}}
+HETATM    5  C5  LIG A   1      -2.652  -0.040   1.050  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG6,2}}
+HETATM    6  C6  LIG A   1      -1.728  -1.049   1.600  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    7  C7  LIG A   1      -0.347  -1.144   0.900  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    8  C8  LIG A   1       0.184   0.185   0.565  1.00  1.00           C     C2    c aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    9  O1  LIG A   1       1.422   0.379   0.551  1.00  1.00           O     O2    o aps={{1,1},{2,0},{3,64}} prop={{NG,1}}
+HETATM   10  C9  LIG A   1      -0.728   1.261   0.136  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   11  C10 LIG A   1      -4.130  -0.140   1.203  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG6,2}}
+HETATM   12  C11 LIG A   1      -4.702  -1.399   1.943  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   13  C12 LIG A   1      -6.256  -1.471   1.906  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   14  C13 LIG A   1      -6.942  -0.143   2.379  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG5,1},{RG6,1}}
+HETATM   15  C14 LIG A   1      -6.730  -0.030   3.945  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   16  C15 LIG A   1      -6.346   1.067   1.563  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG5,1},{RG6,1}}
+HETATM   17  C16 LIG A   1      -7.348   2.210   1.891  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG5,1}}
+HETATM   18  C17 LIG A   1      -8.721   1.532   2.159  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG5,1}}
+HETATM   19  C18 LIG A   1      -8.480  -0.006   2.048  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG5,1}}
+HETATM   20  O2  LIG A   1      -9.312  -0.732   2.956  1.00  1.00           O     O3   oh aps={{1,32},{2,0},{3,64}} prop={{NG,1}}
+HETATM   21  C19 LIG A   1      -8.850  -0.457   0.791  1.00  1.00           C     C1   c1 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   22  C20 LIG A   1      -9.168  -0.825  -0.300  1.00  1.00           C     C1   c1 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM   23  C21 LIG A   1      -4.780   1.218   1.729  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,2},{RG6,2}}
+TER
+REMARK   8 RIGID 7 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c16 c17 c18 c19 c21 c22 c23 j1 j15 j20
+REMARK   8 ROTA sp3-sp3 1 2
+REMARK   8 ROTA sp3-sp3 14 15
+REMARK   8 ROTA sp3-sp3 19 20
+REMARK   8 BONDTYPE 1 sb 1 2
+REMARK   8 BONDTYPE 1 sb 2 3
+REMARK   8 BONDTYPE 1 sb 2 23
+REMARK   8 BONDTYPE 1 sb 3 4
+REMARK   8 BONDTYPE 2 db 4 5
+REMARK   8 BONDTYPE 1 sb 4 10
+REMARK   8 BONDTYPE 1 sb 5 6
+REMARK   8 BONDTYPE 1 sb 5 11
+REMARK   8 BONDTYPE 1 sb 6 7
+REMARK   8 BONDTYPE 1 sb 7 8
+REMARK   8 BONDTYPE 2 db 8 9
+REMARK   8 BONDTYPE 1 sb 8 10
+REMARK   8 BONDTYPE 1 sb 11 12
+REMARK   8 BONDTYPE 1 sb 11 23
+REMARK   8 BONDTYPE 1 sb 12 13
+REMARK   8 BONDTYPE 1 sb 13 14
+REMARK   8 BONDTYPE 1 sb 14 15
+REMARK   8 BONDTYPE 1 sb 14 16
+REMARK   8 BONDTYPE 1 sb 14 19
+REMARK   8 BONDTYPE 1 sb 16 17
+REMARK   8 BONDTYPE 1 sb 16 23
+REMARK   8 BONDTYPE 1 sb 17 18
+REMARK   8 BONDTYPE 1 sb 18 19
+REMARK   8 BONDTYPE 1 sb 19 20
+REMARK   8 BONDTYPE 1 sb 19 21
+REMARK   8 BONDTYPE 3 tb 21 22
+ENDMDL
+REMARK   6 END
+REMARK   5 END
+REMARK   5 MOLECULE loratadine
+REMARK   6 ASYMMETRIC UNIT 0
+MODEL        1
+HETATM    1  C1  LIG A   1      -7.939  -2.586  -1.887  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM    2  C2  LIG A   1      -6.750  -3.464  -2.312  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM    3  O1  LIG A   1      -5.536  -2.799  -1.949  1.00  1.00           O     O3   os aps={{1,32},{2,0},{3,64}} prop={{NG,1}}
+HETATM    4  C3  LIG A   1      -4.267  -3.074  -2.375  1.00  1.00           C     C2    c aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{NG,1}}
+HETATM    5  O2  LIG A   1      -4.113  -3.960  -3.251  1.00  1.00           O     O2    o aps={{1,1},{2,0},{3,64}} prop={{NG,1}}
+HETATM    6  N1  LIG A   1      -3.189  -2.376  -1.863  1.00  1.00           N    Npl    n aps={{2,32},{3,0},{4,1},{5,2}} prop={{AR5,1},{RG6,1}}
+HETATM    7  C4  LIG A   1      -3.316  -1.457  -0.751  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    8  C5  LIG A   1      -2.777  -0.051  -1.133  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM    9  C6  LIG A   1      -1.411  -0.113  -1.692  1.00  1.00           C     C2   c2 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   10  C7  LIG A   1      -1.265  -1.113  -2.772  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   11  C8  LIG A   1      -1.849  -2.506  -2.400  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR5,1},{RG6,1}}
+HETATM   12  C9  LIG A   1      -0.388   0.672  -1.247  1.00  1.00           C     C2   cc aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR2,1},{RG7,1}}
+HETATM   13  C10 LIG A   1      -0.511   1.658  -0.258  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR2,1},{RG6,1},{RG7,1},{ag,1},{ag6,1}}
+HETATM   14  C11 LIG A   1      -1.271   2.813  -0.574  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   15  C12 LIG A   1      -1.443   3.845   0.361  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   16  C13 LIG A   1      -0.859   3.744   1.633  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   17  Cl1 LIG A   1      -1.073   4.984   2.765  1.00  1.00          Cl     Cl   cl aps={{0,64},{1,0},{2,64}} prop={{NG,1}}
+HETATM   18  C14 LIG A   1      -0.078   2.620   1.950  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   19  C15 LIG A   1       0.144   1.580   1.012  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR2,1},{RG6,1},{RG7,1},{ag,1},{ag6,1}}
+HETATM   20  C16 LIG A   1       1.110   0.509   1.434  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR2,1},{RG7,1}}
+HETATM   21  C17 LIG A   1       1.569  -0.579   0.422  1.00  1.00           C     C3   c3 aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR2,1},{RG7,1}}
+HETATM   22  C18 LIG A   1       1.926  -0.001  -0.904  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR2,1},{RG6,1},{RG7,1},{ag,1},{ag6,1}}
+HETATM   23  C19 LIG A   1       3.256   0.030  -1.383  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   24  C20 LIG A   1       3.551   0.608  -2.632  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   25  C21 LIG A   1       2.503   1.130  -3.409  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   26  N2  LIG A   1       1.234   1.099  -2.930  1.00  1.00           N     N2   nb aps={{2,4},{3,0},{4,2}} prop={{AR1,1},{RG6,1},{ag,1},{ag6,1}}
+HETATM   27  C22 LIG A   1       0.916   0.575  -1.715  1.00  1.00           C    Car   ca aps={{2,64},{3,32},{4,0},{5,32},{6,64}} prop={{AR1,1},{AR2,1},{RG6,1},{RG7,1},{ag,1},{ag6,1}}
+TER
+REMARK   8 RIGID -1 c2 j1 j3
+REMARK   8 RIGID -1 c3 j2 j4
+REMARK   8 RIGID 8 c4 c5 j3 j6
+REMARK   8 RIGID 9 c6 c7 c8 c9 c10 c11 j4 j12
+REMARK   8 RIGID 10 c12 c13 c14 c15 c16 c17 c18 c19 c20 c21 c22 c23 c24 c25 c26 c27 j9
+REMARK   8 ROTA sp3-sp3 1 2
+REMARK   8 ROTA sp3-sp3 2 3
+REMARK   8 ROTA sp3-sp2 3 4
+REMARK   8 ROTA sp2-npl 4 6
+REMARK   8 ROTA sp2-sp2 9 12
+REMARK   8 BONDTYPE 1 sb 1 2
+REMARK   8 BONDTYPE 1 sb 2 3
+REMARK   8 BONDTYPE 1 sb 3 4
+REMARK   8 BONDTYPE 2 db 4 5
+REMARK   8 BONDTYPE 1 sb 4 6
+REMARK   8 BONDTYPE 1 sb 6 7
+REMARK   8 BONDTYPE 1 sb 6 11
+REMARK   8 BONDTYPE 1 sb 7 8
+REMARK   8 BONDTYPE 1 sb 8 9
+REMARK   8 BONDTYPE 1 sb 9 10
+REMARK   8 BONDTYPE 2 db 9 12
+REMARK   8 BONDTYPE 1 sb 10 11
+REMARK   8 BONDTYPE 1 sb 12 13
+REMARK   8 BONDTYPE 1 sb 12 27
+REMARK   8 BONDTYPE 1 sb 13 14
+REMARK   8 BONDTYPE 2 db 13 19
+REMARK   8 BONDTYPE 2 db 14 15
+REMARK   8 BONDTYPE 1 sb 15 16
+REMARK   8 BONDTYPE 1 sb 16 17
+REMARK   8 BONDTYPE 2 db 16 18
+REMARK   8 BONDTYPE 1 sb 18 19
+REMARK   8 BONDTYPE 1 sb 19 20
+REMARK   8 BONDTYPE 1 sb 20 21
+REMARK   8 BONDTYPE 1 sb 21 22
+REMARK   8 BONDTYPE 1 sb 22 23
+REMARK   8 BONDTYPE 2 db 22 27
+REMARK   8 BONDTYPE 2 db 23 24
+REMARK   8 BONDTYPE 1 sb 24 25
+REMARK   8 BONDTYPE 2 db 25 26
+REMARK   8 BONDTYPE 1 sb 26 27
+ENDMDL
+REMARK   6 END
+REMARK   5 END
+REMARK   4 END
