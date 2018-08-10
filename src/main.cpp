@@ -17,10 +17,10 @@ int main(int argc, char* argv[]) {
     std::string program_name(argv[1]);
     if (program_name == "help" || program_name == "-h" ||
         program_name == "--help") {
-        std::cout << "Avaible programs are: " << std::endl;
+        std::cout << "Avaible programs are:\n" << std::endl;
         auto programs = ProgramManager::get().programs();
         for (auto prog : programs) {
-            std::cout << std::setw(10) << std::left << "  " << prog.name();
+            std::cout << "    " << std::left << std::setw(15) << prog.name();
             std::cout << "\t" << prog.description() << std::endl;
         }
         std::cout << std::endl

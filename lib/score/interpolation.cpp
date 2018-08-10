@@ -142,10 +142,10 @@ BSplineFit::BSplineFit(const vector<double>& dataX, const vector<double>& dataY,
     gsl_multifit_wlinear(bsplinewsp->X, bsplinewsp->w, bsplinewsp->y,
                          bsplinewsp->c, bsplinewsp->cov, &chisq,
                          bsplinewsp->mw);
-#ifndef NDEBUG
+#ifndef STATCHEM_DEBUG_MESSAGES
     gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1, bsplinewsp->y->size);
 #else
-    double tss = gsl_stats_wtss(w->data, 1, y->data, 1, y->size);
+    double tss = gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1, bsplinewsp->y->size);
     dbgmsg("chisq/dof = " << chisq / (n - ncoeffs)
                           << ", Rsq = " << 1.0 - chisq / tss << "\n");
 #endif

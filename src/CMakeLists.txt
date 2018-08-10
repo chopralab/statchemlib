@@ -3,6 +3,7 @@ add_executable( stch
     main.cpp
 
     programs/ScorePose.cpp
+    programs/AllScorePose.cpp
 )
 
 target_include_directories(stch PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

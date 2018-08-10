@@ -7,12 +7,14 @@
 #include "ProgramManager.hpp"
 
 #include "programs/ScorePose.hpp"
+#include "programs/AllScorePose.hpp"
 
 using namespace statchem_prog;
 
 ProgramManager::ProgramManager() {
     // Add formats here
     this->add_format<ScorePose>();
+    this->add_format<AllScorePose>();
 }
 
 ProgramManager& ProgramManager::get() {
