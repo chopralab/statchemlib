@@ -8,6 +8,8 @@
 
 #include "programs/ScorePose.hpp"
 #include "programs/AllScorePose.hpp"
+#include "programs/KBMinimize.hpp"
+#include "programs/PhysMinimize.hpp"
 
 using namespace statchem_prog;
 
@@ -15,6 +17,8 @@ ProgramManager::ProgramManager() {
     // Add formats here
     this->add_format<ScorePose>();
     this->add_format<AllScorePose>();
+    this->add_format<KBMinimize>();
+    this->add_format<PhysMinimize>();
 }
 
 ProgramManager& ProgramManager::get() {
