@@ -429,12 +429,12 @@ size_t initialize_scoring_full(const char* obj_dir, const char* ref,
             new statchem::score::KBFF(func, comp, ref, cutoff, step));
 
         boost::filesystem::path p(obj_dir);
-        p /= "csd_complete_distance_distributions.txt";
+        p /= "csd_complete_distance_distributions.txt.xz";
 
         __score
             ->define_composition(__receptor->get_idatm_types(),
                                  __ligand->get_idatm_types())
-            .process_distributions_file(p.string())
+            .process_distributions(p.string())
             .compile_scoring_function();
         __score->compile_objective_function(scale);
 

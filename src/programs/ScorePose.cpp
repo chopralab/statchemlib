@@ -183,7 +183,7 @@ int ScorePose::run(int argc, char* argv[]) {
     score
         .define_composition(receptor_mols.get_idatm_types(),
                             ligand_mols.get_idatm_types())
-        .process_distributions_file(dist)
+        .process_distributions(dist)
         .compile_scoring_function();
 
     std::vector<double> output(ligand_mols.size());

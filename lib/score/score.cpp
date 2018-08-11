@@ -19,7 +19,7 @@ ostream& operator<<(ostream& stream, const vector<double>& energy) {
     return stream;
 }
 
-ostream& operator<<(ostream& stream, const Score::AtomPairValues& energies) {
+ostream& operator<<(ostream& stream, const AtomPairValues& energies) {
     for (auto& kv : energies) {
         auto& atom_pair = kv.first;
         auto& energy = kv.second;
@@ -93,7 +93,6 @@ Array1d<double> Score::compute_energy(const molib::Atom::Grid& gridrec,
 
 Score& Score::define_composition(const set<int>& receptor_idatm_types,
                                  const set<int>& ligand_idatm_types) {
-
     if (__prot_lig_pairs.size()) {
         throw std::runtime_error("Attempt to redefine the compositions!");
     }
@@ -130,15 +129,48 @@ Score& Score::define_composition(const set<int>& receptor_idatm_types,
     return *this;
 }
 
-Score& Score::process_distributions_file(const string& distributions_file) {
-    vector<string> distributions_file_raw;
-    fileio::read_file(distributions_file, distributions_file_raw);
+AtomicDistributions::AtomicDistributions(const std::string& filename) {
+    std::vector<std::string> distributions_file_raw;
+    fileio::read_file(filename, distributions_file_raw);
 
-    process_distributions(distributions_file_raw);
-    return *this;
+    step_in_file = -1;
+    max_distance = 0;
+
+    for (const string& line : distributions_file_raw) {
+        stringstream ss(line);  // dist_file is simply too big to use boost
+        string atom_1, atom_2;
+        double lower_bound, upper_bound, quantity;
+        ss >> atom_1 >> atom_2 >> lower_bound >> upper_bound >> quantity;
+
+        // set step size
+        if (step_in_file < 0) {
+            step_in_file = upper_bound - lower_bound;
+        }
+
+        assert(std::fabs(upper_bound - (lower_bound + step_in_file)) < 1e-6);
+
+        size_t current_index = std::round(lower_bound / step_in_file);
+        max_distance = std::max(max_distance, current_index);
+
+        pair_of_ints atom_pair =
+            minmax(help::idatm_mask.at(atom_1), help::idatm_mask.at(atom_2));
+
+        auto map_loc = values.find(atom_pair);
+        if (map_loc == values.end()) {
+            values[atom_pair] = std::vector<double>(max_distance + 1);
+            values[atom_pair][current_index] = quantity;
+            continue;
+        }
+
+        if (map_loc->second.size() != max_distance + 1) {
+            map_loc->second.resize(max_distance + 1);
+        }
+
+        map_loc->second[current_index] = quantity;
+    }
 }
 
-Score& Score::process_distributions(const vector<string>& distributions) {
+Score& Score::process_distributions(const AtomicDistributions& distributions) {
     Benchmark bench;
     log_step << "processing combined histogram ...\n";
     const bool rad_or_raw(__rad_or_raw == "normalized_frequency");
@@ -147,35 +179,41 @@ Score& Score::process_distributions(const vector<string>& distributions) {
         throw std::runtime_error("Attempt to process distribution twice!");
     }
 
-    for (const string& line : distributions) {
-        stringstream ss(line);  // dist_file is simply too big to use boost
-        string atom_1, atom_2;
-        double lower_bound, upper_bound, quantity;
-        ss >> atom_1 >> atom_2 >> lower_bound >> upper_bound >> quantity;
+    __step_in_file = distributions.step_in_file;
+    size_t cuttoff_index = __get_index(__dist_cutoff);
+    __bin_range_sum.resize(cuttoff_index + 1);
 
-        // set step size
-        if (__step_in_file < 0) {
-            __step_in_file = upper_bound - lower_bound;
-            dbgmsg("step_in_file = " << __step_in_file);
-            __bin_range_sum.resize(__get_index(__dist_cutoff) + 1, 0);
+    for (const auto& atom_interactions : distributions.values) {
+        const auto& atom_pair = atom_interactions.first;
+        if (!__prot_lig_pairs.count(atom_pair)) {
+            continue;
         }
 
-        if (upper_bound <= __dist_cutoff) {
-            pair_of_ints atom_pair = minmax(help::idatm_mask.at(atom_1),
-                                            help::idatm_mask.at(atom_2));
-            if (__prot_lig_pairs.count(atom_pair)) {
-                double shell_volume =
-                    (rad_or_raw ? 1.0 : 4 * M_PI * pow(upper_bound, 3) / 3 -
-                                            4 * M_PI * pow(lower_bound, 3) / 3);
-                __gij_of_r_numerator[atom_pair].push_back(quantity /
-                                                          shell_volume);
-                __sum_gij_of_r_numerator[atom_pair] += quantity / shell_volume;
-                // JANEZ : next two are for cumulative scoring function
-                // (compile_cumulative_scoring_function)
-                __bin_range_sum[__get_index(lower_bound)] +=
-                    quantity / shell_volume;
-                __total_quantity += quantity / shell_volume;
+        __gij_of_r_numerator[atom_pair] =
+            std::vector<double>(cuttoff_index + 1);
+        __sum_gij_of_r_numerator[atom_pair] = 0;
+
+        for (size_t index = 0; index < atom_interactions.second.size();
+             ++index) {
+            double lower_bound = __get_lower_bound(index);
+            double upper_bound = __get_lower_bound(index + 1);
+
+            if (upper_bound > __dist_cutoff) {
+                break;
             }
+
+            double quantity = atom_interactions.second[index];
+            double shell_volume = rad_or_raw
+                                      ? 1.0
+                                      : 4 * M_PI * pow(upper_bound, 3) / 3 -
+                                            4 * M_PI * pow(lower_bound, 3) / 3;
+
+            __gij_of_r_numerator[atom_pair][index] = quantity / shell_volume;
+            __sum_gij_of_r_numerator[atom_pair] += quantity / shell_volume;
+            // JANEZ : next two are for cumulative scoring function
+            // (compile_cumulative_scoring_function)
+            __bin_range_sum[index] += quantity / shell_volume;
+            __total_quantity += quantity / shell_volume;
         }
     }
     // JANEZ : next part only needed for compile_mean_scoring_function
@@ -198,6 +236,11 @@ Score& Score::process_distributions(const vector<string>& distributions) {
                   << bench.seconds_from_start() << " wallclock seconds"
                   << "\n";
     return *this;
+}
+
+Score& Score::process_distributions(const std::string& distributions_file) {
+    AtomicDistributions distributions(distributions_file);
+    return process_distributions(distributions);
 }
 
 Score& Score::compile_scoring_function() {
@@ -343,5 +386,5 @@ double Score::non_bonded_energy(const molib::Atom::Grid& gridrec,
     dbgmsg("exiting non_bonded_energy");
     return energy_sum;
 }
-}
-}
+}  // namespace score
+}  // namespace statchem

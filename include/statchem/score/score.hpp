@@ -17,20 +17,28 @@ namespace statchem {
 namespace molib {
 class Molecule;
 class Molecules;
-}
+}  // namespace molib
 
 namespace score {
 
+typedef std::pair<int, int> pair_of_ints;
+typedef std::map<pair_of_ints, std::vector<double>> AtomPairValues;
+typedef std::map<pair_of_ints, double> AtomPairSum;
+
+struct AtomicDistributions {
+    AtomPairValues values;
+    double step_in_file;
+    size_t max_distance;
+    AtomicDistributions(const std::string& filename);
+};
+
 class Score {
    protected:
-    typedef std::pair<int, int> pair_of_ints;
-    typedef std::map<pair_of_ints, std::vector<double>> AtomPairValues;
-
     AtomPairValues __gij_of_r_numerator;
-
     AtomPairValues __energies_scoring;  // scoring function
 
-    std::map<pair_of_ints, double> __sum_gij_of_r_numerator;
+    AtomPairSum __sum_gij_of_r_numerator;
+
     std::vector<double> __gij_of_r_bin_range_sum, __bin_range_sum;
     double __total_quantity;
     std::set<pair_of_ints> __prot_lig_pairs;
@@ -64,8 +72,7 @@ class Score {
           __step_in_file(-1) {}
 
     double non_bonded_energy(const molib::Atom::Grid& gridrec,
-                             const molib::Molecule&)
-        const;  // this was formerly called distances_and_scores_frag_lig
+                             const molib::Molecule&) const;
     double non_bonded_energy(const molib::Atom::Grid& gridrec,
                              const molib::Atom::Vec& atoms,
                              const geometry::Point::Vec& crds) const;
@@ -78,17 +85,18 @@ class Score {
 
     Score& define_composition(const std::set<int>& receptor_idatm_types,
                               const std::set<int>& ligand_idatm_types);
-    Score& process_distributions_file(const std::string& distributions_file);
-    Score& process_distributions(const std::vector<std::string>& distributions);
+
+    Score& process_distributions(const AtomicDistributions& distributions);
+    Score& process_distributions(const std::string& distributions_file);
     Score& compile_scoring_function();
 
     friend std::ostream& operator<<(std::ostream& stream,
                                     const std::vector<double>& energy);
     friend std::ostream& operator<<(std::ostream& stream,
-                                    const Score::AtomPairValues& energies);
+                                    const AtomPairValues& energies);
     friend std::ostream& operator<<(std::ostream& stream, const Score& score);
 };
-}
-}
+}  // namespace score
+}  // namespace statchem
 
 #endif

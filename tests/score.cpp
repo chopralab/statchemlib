@@ -31,12 +31,13 @@ TEST_CASE("RMR6 Score") {
 
     statchem::score::Score score("mean", "reduced", "radial", 6);
     score.define_composition(rmol.get_idatm_types(), lmol.get_idatm_types())
-        .process_distributions_file(
+        .process_distributions(
             "../data/csd_complete_distance_distributions.txt.xz")
         .compile_scoring_function();
 
     statchem::molib::Atom::Grid gridrec(rmol[0].get_atoms());
     auto my_score = score.non_bonded_energy(gridrec, lmol[0]);
+    std::cout << my_score << std::endl;
     CHECK(std::fabs(my_score - (-4.832775)) < 1e-6);
 }
 
@@ -63,31 +64,29 @@ TEST_CASE("Muliple Scoring Functions") {
         .refine_idatm_type()
         .erase_hydrogen();
 
-    std::vector<std::string> distributions_file_raw;
-    statchem::fileio::read_file(
-        "../data/csd_complete_distance_distributions.txt.xz",
-        distributions_file_raw);
+    statchem::score::AtomicDistributions distributions(
+        "../data/csd_complete_distance_distributions.txt.xz");
     auto ltypes = lmol.get_idatm_types();
     auto rtypes = rmol.get_idatm_types();
 
     statchem::score::Score rmc15("mean", "complete", "radial", 15);
     rmc15.define_composition(rtypes, ltypes)
-        .process_distributions(distributions_file_raw)
+        .process_distributions(distributions)
         .compile_scoring_function();
 
     CHECK_THROWS(rmc15.define_composition(rtypes, ltypes));
-    CHECK_THROWS(rmc15.process_distributions(distributions_file_raw));
+    CHECK_THROWS(rmc15.process_distributions(distributions));
 
     statchem::score::Score fmc10("mean", "complete", "normalized_frequency",
                                  10);
     fmc10.define_composition(rtypes, ltypes)
-        .process_distributions(distributions_file_raw)
+        .process_distributions(distributions)
         .compile_scoring_function();
 
     statchem::score::Score fcc4("cumulative", "complete",
                                 "normalized_frequency", 4);
     fcc4.define_composition(rtypes, ltypes)
-        .process_distributions(distributions_file_raw)
+        .process_distributions(distributions)
         .compile_scoring_function();
 
     statchem::molib::Atom::Grid gridrec(rmol[0].get_atoms());

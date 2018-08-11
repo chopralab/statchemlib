@@ -138,10 +138,8 @@ int AllScorePose::run(int argc, char* argv[]) {
             .erase_hydrogen();
     }
 
-    std::vector<std::string> distributions_file_raw;
-    statchem::fileio::read_file(
-        dist,
-        distributions_file_raw);
+
+    statchem::score::AtomicDistributions distributions(dist);
 
     std::vector<std::string> scoring_names;
     std::map<std::string, std::unique_ptr<statchem::score::Score>> scoring_map;
@@ -160,7 +158,7 @@ int AllScorePose::run(int argc, char* argv[]) {
                     scoring_map[scoring_names.back()]
                         ->define_composition(receptor_mols.get_idatm_types(),
                                              ligand_mols.get_idatm_types())
-                        .process_distributions(distributions_file_raw)
+                        .process_distributions(distributions)
                         .compile_scoring_function();
                 }
             }
