@@ -16,14 +16,12 @@ ostream& operator<<(ostream& stream, const KBFF& score) {
     for (auto& kv : score.__energies_scoring) {
         auto& atom_pair = kv.first;
         auto& ene = score.__energies.at(atom_pair);
-        auto& der = score.__derivatives.at(atom_pair);
         stream << "#objective function" << endl;
         for (size_t i = 0; i < ene.size(); ++i) {
             stream << help::idatm_unmask[atom_pair.first] << "\t"
                    << help::idatm_unmask[atom_pair.second] << "\t" << fixed
                    << setprecision(3) << i * score.__step_non_bond << "\t"
-                   << fixed << setprecision(3) << ene[i] << "\t" << fixed
-                   << setprecision(3) << der[i] << endl;
+                   << fixed << setprecision(3) << ene[i] << std::endl;
         }
     }
     return stream;
@@ -115,15 +113,6 @@ KBFF& KBFF::parse_objective_function(const string& obj_dir,
             for (int i = 0; i < energies_diff; ++i) {
                 __energies[atom_pair].push_back(0.0);
             }
-        }
-
-        __derivatives[atom_pair] =
-            Interpolation::derivative(__energies[atom_pair], __step_non_bond);
-
-        // scale derivatives ONLY not energies and don't do it in kbforce cause
-        // here is more efficient
-        for (auto& dEdt : __derivatives[atom_pair]) {
-            dEdt *= scale_non_bond;
         }
     }
     dbgmsg("parsed objective function");
@@ -389,15 +378,6 @@ KBFF& KBFF::compile_objective_function(const double scale_non_bond) {
 
             __energies[atom_pair].assign(potential.begin(), potential.end());
 
-            __derivatives[atom_pair] = Interpolation::derivative(
-                __energies[atom_pair], __step_non_bond);
-
-            // scale derivatives ONLY not energies and don't do it in kbforce
-            // cause here is more efficient
-            for (auto& dEdt : __derivatives[atom_pair]) {
-                dEdt *= scale_non_bond;
-            }
-
 #ifndef NDEBUG
             for (size_t i = 0; i < potential.size(); ++i) {
                 dbgmsg("interpolated "
@@ -412,7 +392,6 @@ KBFF& KBFF::compile_objective_function(const double scale_non_bond) {
             const int n = (int)std::floor(__dist_cutoff / __step_non_bond) + 1;
             dbgmsg("n = " << n);
             __energies[atom_pair].assign(n, 0.0);
-            __derivatives[atom_pair].assign(n, 0.0);
         }
     }
     dbgmsg("out of loop");

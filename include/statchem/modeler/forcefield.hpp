@@ -54,7 +54,7 @@ struct ForceField {
         std::set<std::string> external_bond;  // from
     };
     struct KBType {
-        std::vector<double> potential, derivative;
+        std::vector<double> potential;
     };
     typedef std::map<const int, AtomType> Atoms;
     typedef std::map<const std::string, std::map<const std::string, BondType>>

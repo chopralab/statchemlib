@@ -6,7 +6,7 @@ namespace statchem {
 
 namespace score {
 class KBFF : public Score {
-    AtomPairValues __energies, __derivatives;  // objective function
+    AtomPairValues __energies;  // objective function
     double __step_non_bond;
 
    public:
@@ -18,7 +18,6 @@ class KBFF : public Score {
 
     double get_step_nonbond() const { return __step_non_bond; }
     const AtomPairValues& get_energies() const { return __energies; }
-    const AtomPairValues& get_derivatives() const { return __derivatives; }
 
     KBFF& compile_objective_function(const double scale_non_bond);
     KBFF& parse_objective_function(const std::string& obj_dir,

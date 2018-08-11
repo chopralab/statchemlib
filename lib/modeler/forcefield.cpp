@@ -11,9 +11,9 @@
 #include <string>
 #include "statchem/external/rapidxml/rapidxml.hpp"
 #include "statchem/external/rapidxml/rapidxml_print.hpp"
+#include "statchem/fileio/inout.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/helper/help.hpp"
-#include "statchem/fileio/inout.hpp"
 #include "statchem/molib/molecule.hpp"
 #include "statchem/score/kbff.hpp"
 using namespace std;
@@ -47,12 +47,10 @@ ostream& operator<<(ostream& os, const ForceField::KBForces& kb) {
         for (auto& kv2 : kv1.second) {
             const int aclass2 = kv2.first;
             const auto& pot = kv2.second.potential;
-            const auto& der = kv2.second.derivative;
             os << "KB forcefield for " << help::idatm_unmask[aclass1] << " and "
                << help::idatm_unmask[aclass2] << " : " << endl;
             for (size_t i = 0; i < pot.size(); ++i)
-                os << "i = " << i << " pot = " << pot[i] << " der = " << der[i]
-                   << endl;
+                os << "i = " << i << " pot = " << pot[i] << endl;
         }
     }
     return os;
@@ -391,11 +389,6 @@ ForceField& ForceField::add_kb_forcefield(const score::KBFF& score,
         auto& energy = kv.second;
         this->kb_force_type[atom_pair.first][atom_pair.second].potential =
             energy;
-    }
-    for (auto& kv : score.get_derivatives()) {
-        auto& atom_pair = kv.first;
-        auto& der = kv.second;
-        this->kb_force_type[atom_pair.first][atom_pair.second].derivative = der;
     }
     return *this;
 }
@@ -777,9 +770,9 @@ void ForceField::output_forcefield_file(
     xml_node<>* kb_node = doc.allocate_node(node_element, "KBForce");
     ff_node->append_node(kb_node);
     //~ kb_node->append_attribute(doc.allocate_attribute("step", str(doc,
-    //this->step)));
+    // this->step)));
     //~ kb_node->append_attribute(doc.allocate_attribute("scale", str(doc,
-    //this->scale)));
+    // this->scale)));
     for (auto& kv : this->kb_force_type) {
         const auto& cl1 = kv.first;
         for (auto& kv2 : kv.second) {
@@ -798,10 +791,6 @@ void ForceField::output_forcefield_file(
                 doc.allocate_attribute("potential", str(doc, ss.str())));
             ss.str("");
             ss.clear();
-            copy(kbt.derivative.begin(), kbt.derivative.end(),
-                 ostream_iterator<double>(ss, " "));
-            kb_bond_node->append_attribute(
-                doc.allocate_attribute("derivative", str(doc, ss.str())));
         }
     }
     // print XML to file
@@ -1008,16 +997,12 @@ ForceField& ForceField::parse_forcefield_file(
             vector<double> potential(pot.size()), derivative(der.size());
             transform(pot.begin(), pot.end(), potential.begin(),
                       [this](const std::string& val) { return stod(val); });
-            transform(der.begin(), der.end(), derivative.begin(),
-                      [this](const std::string& val) { return stod(val); });
-            this->kb_force_type[cl1][cl2] = KBType{potential, derivative};
+            this->kb_force_type[cl1][cl2] = KBType{potential};
             dbgmsg("knowledge-based force between "
                    << help::idatm_unmask[cl1] << " and "
                    << help::idatm_unmask[cl2] << " is "
                    << " potential = "
-                   << stod(node->first_attribute("potential")->value())
-                   << " derivative = "
-                   << stod(node->first_attribute("derivative")->value()));
+                   << stod(node->first_attribute("potential")->value()));
         }
     }
     delete[] c_ff_file;
