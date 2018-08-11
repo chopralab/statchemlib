@@ -417,7 +417,7 @@ size_t initialize_scoring(const char* obj_dir) {
 
 size_t initialize_scoring_full(const char* obj_dir, const char* ref,
                                const char* func, const char* comp, float cutoff,
-                               float step, float scale) {
+                               float step, float) {
     if (__ligand == nullptr || __receptor == nullptr) {
         __error_string = std::string(
             "You must run initialize_ligand and initialize_receptor first");
@@ -436,7 +436,7 @@ size_t initialize_scoring_full(const char* obj_dir, const char* ref,
                                  __ligand->get_idatm_types())
             .process_distributions(p.string())
             .compile_scoring_function();
-        __score->compile_objective_function(scale);
+        __score->compile_objective_function();
 
         return 1;
     } catch (std::exception& e) {

@@ -19,7 +19,7 @@ class KBFF : public Score {
     double get_step_nonbond() const { return __step_non_bond; }
     const AtomPairValues& get_energies() const { return __energies; }
 
-    KBFF& compile_objective_function(const double scale_non_bond);
+    KBFF& compile_objective_function();
     KBFF& parse_objective_function(const std::string& obj_dir,
                                    const double scale_non_bond,
                                    const size_t max_step);

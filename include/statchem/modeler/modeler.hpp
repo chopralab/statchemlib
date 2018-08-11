@@ -68,8 +68,8 @@ class Modeler {
     void dynamics();
 
     void init_openmm_positions();
-    void init_openmm(const std::string& platform, const std::string& precision,
-                     const std::string& accelerators,
+    void init_openmm(const std::string& platform, const std::string& precision = "double",
+                     const std::string& accelerators = "",
                      SystemTopology::integrator_type type =
                          SystemTopology::integrator_type::none);
 

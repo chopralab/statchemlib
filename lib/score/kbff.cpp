@@ -119,7 +119,7 @@ KBFF& KBFF::parse_objective_function(const string& obj_dir,
     return *this;
 }
 
-KBFF& KBFF::compile_objective_function(const double scale_non_bond) {
+KBFF& KBFF::compile_objective_function() {
     log_step << "Compiling objective function for minimization...\n";
     Benchmark bench;
     auto energy_function = __ref_state == "mean"
