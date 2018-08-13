@@ -26,16 +26,22 @@ int main(int argc, char* argv[]) {
         std::cout << std::endl
                   << "To see help for a specific program, run" << std::endl;
         std::cout << argv[0] << " <program_name> --help" << std::endl;
-        return 0;
+        return 1;
     }
 
     try {
-        auto program = ProgramManager::get().name(argv[1]);
+        auto program_factory = ProgramManager::get().name(program_name);
+        auto program = program_factory();
+        if (program->process_options(argc - 1, argv + 1)) {
+            return program->run();
+        }
 
-        return program()->run(argc - 1, argv + 1);
+        std::cout << program->get_help() << std::endl;
+        return 1;
     } catch(std::exception& e) {
         std::cerr << "'" << argv[0] << " " << argv[1] << "' failed because: " << std::endl;
         std::cerr << e.what() << std::endl;
+        std::cerr << "Please run '" << argv[0] << " " << argv[1] << " --help' for more information." << std::endl;
         return 2;
     }
 }

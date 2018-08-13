@@ -13,6 +13,8 @@ namespace fs = boost::filesystem;
 #include "statchem/parser/fileparser.hpp"
 #include "statchem/score/score.hpp"
 
+#include "programs/common.hpp"
+
 using namespace statchem_prog;
 
 template <>
@@ -25,18 +27,8 @@ ProgramInfo statchem_prog::program_information<AllScorePose>() {
 
 AllScorePose::AllScorePose() {}
 
-int AllScorePose::run(int argc, char* argv[]) {
-    po::options_description starting_inputs("Starting input files");
-    starting_inputs.add_options()("help,h", "Show this help menu.")(
-        "receptor,r", po::value<std::string>()->default_value("receptor.pdb"),
-        "Receptor filename. Will be ignored if the complex option is given")(
-        "ligand,l", po::value<std::string>()->default_value("ligand.mol2"),
-        "Ligand filename. Will be ignored if the complex option is given")(
-        "complex,c", po::value<std::string>(),
-        "File with both the ligand and receptor present. Overrides above "
-        "options")(
-        "ncpu,n", po::value<int>()->default_value(-1),
-        "Number of CPUs to use concurrently (use -1 to use all CPUs)");
+bool AllScorePose::process_options(int argc, char* argv[]) {
+    auto starting_inputs = common_starting_inputs();
 
     po::options_description scoring_options("Scoring Function Arguments");
     scoring_options.add_options()(
@@ -54,74 +46,26 @@ int AllScorePose::run(int argc, char* argv[]) {
     po::notify(vm);
 
     if (vm.count("help")) {
-        std::cout
-            << "This program is used to calculate the KB-Score of a \n"
-               "given compelx. To use it, specify a 'receptor' and a ligand'\n"
-               "file. Alternatively, you can specify a complex file and\n"
-               "the residue name of interest. You may also specify files\n"
-               "containing multiple complexes. The following cases are valid\n"
-            << std::endl;
-        std::cout << "(1) A single complex PDB file with multiple complexes "
-                     "separted by MODEL and ENDMDL"
-                  << std::endl;
-        std::cout << "(2) A receptor file containing a single biomolecule and "
-                     "a ligand file containing mutliple small-molecules"
-                  << std::endl;
-        std::cout << "(3) A receptor file containing multiple biomolecules and "
-                     "a ligand file containing the same number of "
-                     "small-molecules"
-                  << std::endl;
-        std::cout << std::endl << "Valid options are: " << std::endl;
-        std::cout << cmdln_options << std::endl;
-
-        return 0;
+        __help_text << "This program scores complexes using all the scoring"
+                    << "functions provided by StatChemLib.\n\n";
+        __help_text << starting_inputs_help() << "\n";
+        __help_text << cmdln_options << std::endl;
+        return false;
     }
 
-    auto dist = vm["dist"].as<std::string>();
-    if (statchem::fileio::file_size(dist) <= 0) {
-        throw std::runtime_error(std::string("File: '") + dist +
-                                 std::string("' is invalid"));
-    }
+    __constant_receptor =
+        process_starting_inputs(vm, __receptor_mols, __ligand_mols);
 
-    statchem::molib::Molecules receptor_mols;
-    statchem::molib::Molecules ligand_mols;
+    __num_threads = vm["ncpu"].as<int>() <= 0
+                        ? std::thread::hardware_concurrency()
+                        : static_cast<size_t>(vm["ncpu"].as<int>());
 
-    bool constant_receptor = false;
-    if (vm.count("complex")) {
-        auto complex = vm["complex"].as<std::string>();
+    return true;
+}
 
-        statchem::parser::FileParser drpdb(
-            complex, statchem::parser::pdb_read_options::protein_poses_only |
-                         statchem::parser::pdb_read_options::all_models);
-
-        drpdb.parse_molecule(receptor_mols);
-
-        statchem::parser::FileParser dlpdb(
-            complex, statchem::parser::pdb_read_options::docked_poses_only |
-                         statchem::parser::pdb_read_options::skip_atom |
-                         statchem::parser::pdb_read_options::all_models);
-        dlpdb.parse_molecule(ligand_mols);
-
-    } else {
-        auto receptor = vm["receptor"].as<std::string>();
-        statchem::parser::FileParser rpdb(
-            receptor, statchem::parser::pdb_read_options::all_models);
-        rpdb.parse_molecule(receptor_mols);
-
-        auto ligand = vm["ligand"].as<std::string>();
-        statchem::parser::FileParser lpdb(
-            ligand, statchem::parser::pdb_read_options::all_models);
-        lpdb.parse_molecule(ligand_mols);
-
-        if (receptor_mols.size() == 1) {
-            constant_receptor = true;
-        } else if (ligand_mols.size() != receptor_mols.size()) {
-            throw std::length_error("Differing number of complexes!");
-        }
-    }
-
-    if (receptor_mols.get_idatm_types().size() == 1) {
-        receptor_mols.compute_idatm_type()
+int AllScorePose::run() {
+    if (__receptor_mols.get_idatm_types().size() == 1) {
+        __receptor_mols.compute_idatm_type()
             .compute_hydrogen()
             .compute_bond_order()
             .compute_bond_gaff_type()
@@ -129,8 +73,8 @@ int AllScorePose::run(int argc, char* argv[]) {
             .erase_hydrogen();
     }
 
-    if (ligand_mols.get_idatm_types().size() == 1) {
-        ligand_mols.compute_idatm_type()
+    if (__ligand_mols.get_idatm_types().size() == 1) {
+        __ligand_mols.compute_idatm_type()
             .compute_hydrogen()
             .compute_bond_order()
             .compute_bond_gaff_type()
@@ -138,8 +82,7 @@ int AllScorePose::run(int argc, char* argv[]) {
             .erase_hydrogen();
     }
 
-
-    statchem::score::AtomicDistributions distributions(dist);
+    statchem::score::AtomicDistributions distributions(__dist);
 
     std::vector<std::string> scoring_names;
     std::map<std::string, std::unique_ptr<statchem::score::Score>> scoring_map;
@@ -156,8 +99,8 @@ int AllScorePose::run(int argc, char* argv[]) {
                                                        cutoff));
 
                     scoring_map[scoring_names.back()]
-                        ->define_composition(receptor_mols.get_idatm_types(),
-                                             ligand_mols.get_idatm_types())
+                        ->define_composition(__receptor_mols.get_idatm_types(),
+                                             __ligand_mols.get_idatm_types())
                         .process_distributions(distributions)
                         .compile_scoring_function();
                 }
@@ -165,22 +108,18 @@ int AllScorePose::run(int argc, char* argv[]) {
         }
     }
 
-    size_t num_threads = vm["ncpu"].as<int>() <= 0
-                             ? std::thread::hardware_concurrency()
-                             : static_cast<size_t>(vm["ncpu"].as<int>());
-
-    std::vector<std::vector<double>> output(ligand_mols.size());
+    std::vector<std::vector<double>> output(__ligand_mols.size());
 
     std::vector<std::thread> threads;
-    for (size_t thread_id = 0; thread_id < num_threads; ++thread_id) {
+    for (size_t thread_id = 0; thread_id < __num_threads; ++thread_id) {
         threads.push_back(std::thread([&, thread_id] {
-            for (size_t i = thread_id; i < ligand_mols.size();
-                 i += num_threads) {
-                const auto& protein =
-                    constant_receptor ? receptor_mols[0] : receptor_mols[i];
-                const auto& ligand = ligand_mols[i];
+            for (size_t i = thread_id; i < __ligand_mols.size();
+                 i += __num_threads) {
+                const auto& protein = __constant_receptor ? __receptor_mols[0]
+                                                          : __receptor_mols[i];
+                const auto& ligand = __ligand_mols[i];
 
-                statchem::molib::Atom::Grid gridrec(protein.get_atoms());
+                const statchem::molib::Atom::Grid gridrec(protein.get_atoms());
 
                 output[i].reserve(96);
 
@@ -198,8 +137,8 @@ int AllScorePose::run(int argc, char* argv[]) {
         thread.join();
     }
 
-    for (size_t i = 0; i < ligand_mols.size(); ++i) {
-        std::cout << ligand_mols[i].name();
+    for (size_t i = 0; i < __ligand_mols.size(); ++i) {
+        std::cout << __ligand_mols[i].name();
         for (auto score : output[i]) std::cout << ',' << score;
         std::cout << "\n";
     }

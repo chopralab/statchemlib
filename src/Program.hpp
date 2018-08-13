@@ -3,12 +3,21 @@
 
 #include <stdexcept>
 #include <string>
+#include <sstream>
 
 namespace statchem_prog {
 
 class Program {
    public:
-    virtual int run(int argc, char* argv[]) = 0;
+    virtual bool process_options(int argc, char* argv[]) = 0;
+    virtual int run() = 0;
+
+    std::string get_help() const {
+        return __help_text.str();
+    }
+
+   protected:
+    std::stringstream __help_text;
 };
 
 class ProgramInfo {
