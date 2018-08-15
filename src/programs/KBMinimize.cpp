@@ -30,8 +30,17 @@ KBMinimize::KBMinimize() {}
 
 bool KBMinimize::process_options(int argc, char* argv[]) {
     auto starting_inputs = common_starting_inputs();
+
     auto score_options = scoring_options();
+    score_options.add_options()(
+        "step_size", po::value<double>(&__step_size)->default_value(0.01),
+        "Step size for fitted bsplines.");
+
     auto ff_min = forcefield_options();
+    ff_min.add_options()("distance_cutoff",
+                         po::value<double>(&__dist_cut)->default_value(6.0),
+                         "Distance cutoff for intermolecular forces.");
+
     auto openmm = openmm_options();
 
     po::options_description cmdln_options;
@@ -56,6 +65,11 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
         process_starting_inputs(vm, __receptor_mols, __ligand_mols);
 
     process_scorint_options(vm, __ref, __comp, __func, __cutoff, __dist);
+
+    if (__dist_cut > __cutoff) {
+        throw std::out_of_range(
+            "The --distance_cutoff must be <= the scoring function cutoff.");
+    }
 
     process_forcefield_options(vm, __ffield, __mini_tol, __iter_max);
     process_openmm_options(vm, __platform, __precision, __accelerators);
@@ -90,8 +104,8 @@ int KBMinimize::run() {
             .erase_hydrogen();
     }
 
-    __score = std::unique_ptr<statchem::score::KBFF>(
-        new statchem::score::KBFF(__ref, __comp, __func, __cutoff, 0.01));
+    __score = std::unique_ptr<statchem::score::KBFF>(new statchem::score::KBFF(
+        __ref, __comp, __func, __cutoff, __step_size));
 
     __score
         ->define_composition(__receptor_mols.get_idatm_types(),
@@ -99,6 +113,8 @@ int KBMinimize::run() {
         .process_distributions(__dist)
         .compile_scoring_function();
     __score->compile_objective_function();
+
+    __ffield.add_kb_forcefield(*__score, __dist_cut);
 
     statchem::OMMIface::SystemTopology::loadPlugins();
 

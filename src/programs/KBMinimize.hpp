@@ -28,11 +28,13 @@ class KBMinimize : public Program {
     std::string __comp;
     std::string __func;
     double __cutoff;
+    double __step_size;
     std::unique_ptr<statchem::score::KBFF> __score;
 
     statchem::OMMIface::ForceField __ffield;
     double __mini_tol;
     int __iter_max;
+    double __dist_cut;
     std::string __platform, __precision, __accelerators;
 };
 
