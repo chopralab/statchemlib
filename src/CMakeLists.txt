@@ -6,6 +6,7 @@ add_executable( stch
     programs/AllScorePose.cpp
     programs/KBMinimize.cpp
     programs/PhysMinimize.cpp
+    programs/MakeObjective.cpp
 )
 
 target_include_directories(stch PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

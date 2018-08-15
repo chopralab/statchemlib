@@ -103,7 +103,7 @@ TEST_CASE("Knowledge-based energy minization") {
     double min_potential = modeler.potential_energy();
 
     CHECK(min_potential < potential);
-    CHECK(std::fabs(min_energy - 27.8028) < 1e-3);
+    CHECK(std::fabs(min_energy - -5.51348) < 1e-3);
 }
 
 TEST_CASE("Physics-based energy minization") {

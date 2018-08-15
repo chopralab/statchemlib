@@ -6,7 +6,8 @@
                 "/usr/include",
                 "/usr/local/include",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/tests/external"
+                "${workspaceFolder}/tests/external",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -36,7 +37,8 @@
                 "/usr/lib/llvm-3.8/lib/clang/3.8.0/include",
                 "/usr/include/x86_64-linux-gnu",
                 "/usr/include",
-                "${workspaceFolder}/tests/external"
+                "${workspaceFolder}/tests/external",
+                "${workspaceFolder}/src"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
@@ -64,7 +66,8 @@
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/tests/external"
+                "${workspaceFolder}/tests/external",
+                "${workspaceFolder}/src"
             ],
             "defines": [
                 "_DEBUG",

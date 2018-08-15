@@ -181,7 +181,7 @@ Score& Score::process_distributions(const AtomicDistributions& distributions) {
 
     __step_in_file = distributions.step_in_file;
     size_t cuttoff_index = __get_index(__dist_cutoff);
-    __bin_range_sum.resize(cuttoff_index + 1);
+    __bin_range_sum.resize(cuttoff_index);
 
     for (const auto& atom_interactions : distributions.values) {
         const auto& atom_pair = atom_interactions.first;
@@ -189,8 +189,7 @@ Score& Score::process_distributions(const AtomicDistributions& distributions) {
             continue;
         }
 
-        __gij_of_r_numerator[atom_pair] =
-            std::vector<double>(cuttoff_index + 1);
+        __gij_of_r_numerator[atom_pair] = std::vector<double>(cuttoff_index);
         __sum_gij_of_r_numerator[atom_pair] = 0;
 
         for (size_t index = 0; index < atom_interactions.second.size();
@@ -203,10 +202,9 @@ Score& Score::process_distributions(const AtomicDistributions& distributions) {
             }
 
             double quantity = atom_interactions.second[index];
-            double shell_volume = rad_or_raw
-                                      ? 1.0
-                                      : 4 * M_PI * pow(upper_bound, 3) / 3 -
-                                            4 * M_PI * pow(lower_bound, 3) / 3;
+            double shell_volume =
+                rad_or_raw ? 1.0 : 4 * M_PI * pow(upper_bound, 3) / 3 -
+                                       4 * M_PI * pow(lower_bound, 3) / 3;
 
             __gij_of_r_numerator[atom_pair][index] = quantity / shell_volume;
             __sum_gij_of_r_numerator[atom_pair] += quantity / shell_volume;

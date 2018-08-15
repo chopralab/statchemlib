@@ -1,17 +1,17 @@
 #include "statchem/score/interpolation.hpp"
 #include <assert.h>
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_errno.h>
+#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_statistics.h>
+#include <gsl/gsl_vector.h>
 #include <functional>
-#include "statchem/helper/help.hpp"
 #include "statchem/fileio/inout.hpp"
+#include "statchem/helper/help.hpp"
 using namespace std;
 
 namespace statchem {
@@ -94,12 +94,11 @@ BSplineFit::BSplineFit(const vector<double>& dataX, const vector<double>& dataY,
     : n(dataX.size()),
       ncoeffs2((ncoeffs < n) ? ncoeffs : n),
       nbreak(ncoeffs2 + 2 - k),  // nbreak = ncoeffs2 + 2 - k
-      bsplinewsp(new BSplineFitWorkspace)
-{
+      bsplinewsp(new BSplineFitWorkspace) {
     assert(dataX.size() > 0 && dataX.size() == dataY.size());
 
     bsplinewsp->bw = gsl_bspline_alloc(
-          k, nbreak);  // allocate a cubic bspline workspace (k = 4)
+        k, nbreak);  // allocate a cubic bspline workspace (k = 4)
     bsplinewsp->B = gsl_vector_alloc(ncoeffs2);
     bsplinewsp->c = gsl_vector_alloc(ncoeffs2);
     bsplinewsp->w = gsl_vector_alloc(n);
@@ -143,9 +142,11 @@ BSplineFit::BSplineFit(const vector<double>& dataX, const vector<double>& dataY,
                          bsplinewsp->c, bsplinewsp->cov, &chisq,
                          bsplinewsp->mw);
 #ifndef STATCHEM_DEBUG_MESSAGES
-    gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1, bsplinewsp->y->size);
+    gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1,
+                   bsplinewsp->y->size);
 #else
-    double tss = gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1, bsplinewsp->y->size);
+    double tss = gsl_stats_wtss(bsplinewsp->w->data, 1, bsplinewsp->y->data, 1,
+                                bsplinewsp->y->size);
     dbgmsg("chisq/dof = " << chisq / (n - ncoeffs)
                           << ", Rsq = " << 1.0 - chisq / tss << "\n");
 #endif
@@ -160,16 +161,16 @@ vector<double> BSplineFit::interpolate_bspline(const double start,
     for (double xi = start; xi <= end; xi += step) {
         double yi, yerr;
         gsl_bspline_eval(xi, bsplinewsp->B, bsplinewsp->bw);
-        gsl_multifit_linear_est(bsplinewsp->B, bsplinewsp->c, bsplinewsp->cov, &yi, &yerr);
+        gsl_multifit_linear_est(bsplinewsp->B, bsplinewsp->c, bsplinewsp->cov,
+                                &yi, &yerr);
+
         pot.push_back(yi);
     }
 
     return pot;
 }
 
-BSplineFit::~BSplineFit() {
-    delete bsplinewsp;
-}
-}
-}
-}
+BSplineFit::~BSplineFit() { delete bsplinewsp; }
+}  // namespace Interpolation
+}  // namespace score
+}  // namespace statchem

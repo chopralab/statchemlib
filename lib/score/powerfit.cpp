@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
 
 #include <exception>
 #include <tuple>
@@ -79,8 +78,8 @@ void ex_rep_callback(const size_t, void*,
     gsl_multifit_nlinear_rcond(&rcond, w);
 
     dbgmsg("sigma = " << gsl_vector_get(params, 0)
-                    << ", b = " << gsl_vector_get(params, 1) << ", conj(J) = "
-                    << 1.0 / rcond << ", |f(x)| = " << gsl_blas_dnrm2(f));
+                      << ", b = " << gsl_vector_get(params, 1) << ", conj(J) = "
+                      << 1.0 / rcond << ", |f(x)| = " << gsl_blas_dnrm2(f));
 }
 
 std::tuple<double, double, double> fit_power_function(
@@ -276,5 +275,5 @@ std::tuple<double, double, double> fit_range_power_function_fast(
 
     return std::make_tuple(best_sigma, best_b, best_p);
 }
-}
-}
+}  // namespace score
+}  // namespace statchem
