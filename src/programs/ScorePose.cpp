@@ -55,7 +55,7 @@ bool ScorePose::process_options(int argc, char* argv[]) {
                         ? std::thread::hardware_concurrency()
                         : static_cast<size_t>(vm["ncpu"].as<int>());
 
-    process_scorint_options(vm, __ref, __comp, __func, __cutoff, __dist);
+    process_scoring_options(vm, __ref, __comp, __func, __cutoff, __dist);
 
     return true;
 }

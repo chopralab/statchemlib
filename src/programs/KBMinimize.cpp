@@ -64,7 +64,7 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
     __constant_receptor =
         process_starting_inputs(vm, __receptor_mols, __ligand_mols);
 
-    process_scorint_options(vm, __ref, __comp, __func, __cutoff, __dist);
+    process_scoring_options(vm, __ref, __comp, __func, __cutoff, __dist);
 
     if (__dist_cut > __cutoff) {
         throw std::out_of_range(

@@ -171,7 +171,7 @@ inline po::options_description scoring_options() {
     return scoring_options;
 }
 
-inline void process_scorint_options(po::variables_map& vm, std::string& ref,
+inline void process_scoring_options(po::variables_map& vm, std::string& ref,
                                     std::string& comp, std::string& func,
                                     double& cutoff, std::string& dist) {
     ref = vm["ref"].as<std::string>();

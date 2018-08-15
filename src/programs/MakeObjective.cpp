@@ -61,7 +61,7 @@ bool MakeObjective::process_options(int argc, char* argv[]) {
         return false;
     }
 
-    process_scorint_options(vm, __ref, __comp, __func, __cutoff, __dist);
+    process_scoring_options(vm, __ref, __comp, __func, __cutoff, __dist);
 
     if (!atom_type_names.empty()) {
         for (auto a : atom_type_names) {
