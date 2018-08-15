@@ -1,7 +1,6 @@
 #ifndef BONDTYPE_H
 #define BONDTYPE_H
 #include <cstdlib>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <set>
@@ -9,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 #include "statchem/molib/it.hpp"
+#include "statchem/molib/atom.hpp"
+#include "statchem/molib/bond.hpp"
 
 namespace statchem {
 

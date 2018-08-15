@@ -1,5 +1,6 @@
 #include "PhysMinimize.hpp"
 
+#include <iostream>
 #include <thread>
 
 #include <boost/program_options.hpp>

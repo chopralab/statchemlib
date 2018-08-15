@@ -1,15 +1,15 @@
 #ifndef CANDOCK_DEBUG_HPP
 #define CANDOCK_DEBUG_HPP
 
-#include <iomanip>
-#include <iostream>
-
 #ifndef STATCHEM_DEBUG_MESSAGES
 
 #define dbgprint(x)
 #define dbgmsg(message)
 
 #else
+
+#include <iomanip>
+#include <iostream>
 
 #define dbgprint(x)                                                       \
     std::cerr << #x << ": " << x << " in " << __FILE__ << ":" << __LINE__ \

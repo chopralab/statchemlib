@@ -2,13 +2,11 @@
 #define SCORE_H
 #include <cmath>
 #include <exception>
-#include <iostream>
 #include <map>
 #include <set>
 #include <typeinfo>
 #include "statchem/geometry/geometry.hpp"
 #include "statchem/helper/array1d.hpp"
-#include "statchem/helper/benchmark.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/molib/atom.hpp"
 

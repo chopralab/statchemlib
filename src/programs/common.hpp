@@ -21,9 +21,7 @@ inline po::options_description common_starting_inputs() {
         "Ligand filename. Will be ignored if the complex option is given")(
         "complex,c", po::value<std::string>(),
         "File with both the ligand and receptor present. Overrides above "
-        "options")(
-        "ncpu,n", po::value<int>()->default_value(-1),
-        "Number of CPUs to use concurrently (use -1 to use all CPUs)");
+        "options");
 
     return starting_inputs;
 }

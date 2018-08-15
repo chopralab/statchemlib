@@ -29,7 +29,6 @@
 #include <assert.h>
 #include <algorithm>
 #include <exception>
-#include <iostream>
 #include <set>
 #include <vector>
 #include "statchem/helper/array2d.hpp"

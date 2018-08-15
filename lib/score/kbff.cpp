@@ -3,6 +3,8 @@
 #include <boost/filesystem/path.hpp>
 #include "statchem/helper/help.hpp"
 #include "statchem/helper/path.hpp"
+#include "statchem/helper/benchmark.hpp"
+#include "statchem/helper/logger.hpp"
 #include "statchem/score/interpolation.hpp"
 #include "statchem/score/powerfit.hpp"
 #include "statchem/fileio/inout.hpp"

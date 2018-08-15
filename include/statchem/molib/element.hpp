@@ -1,7 +1,8 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
-#include <iostream>
 #include <vector>
+#include <string>
+#include <ostream>
 
 namespace statchem {
 

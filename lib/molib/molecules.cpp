@@ -10,6 +10,7 @@
 #include "statchem/fragmenter/unique.hpp"
 #include "statchem/geometry/geometry.hpp"
 #include "statchem/helper/help.hpp"
+#include "statchem/helper/logger.hpp"
 #include "statchem/molib/assembly.hpp"
 #include "statchem/molib/atom.hpp"
 #include "statchem/molib/atomtype.hpp"

@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "statchem/helper/logger.hpp"
 #include "statchem/fragmenter/fragmenter.hpp"
 #include "statchem/fragmenter/unique.hpp"
 #include "statchem/geometry/geometry.hpp"

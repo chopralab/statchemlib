@@ -1,7 +1,6 @@
 #include "statchem/helper/help.hpp"
 #include <math.h>
 #include <stdio.h>
-#include <iostream>
 #include <string>
 #include "statchem/helper/renamerules.hpp"
 #include "statchem/helper/logger.hpp"

@@ -8,10 +8,8 @@
 #include <set>
 #include "statchem/graph/mnts.hpp"
 #include "statchem/graph/ullsubstate.hpp"
-#include "statchem/helper/benchmark.hpp"
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
-#include "statchem/helper/logger.hpp"
 #include "statchem/helper/smiles.hpp"
 #include "statchem/molib/it.hpp"
 
@@ -249,7 +247,6 @@ typename Graph<Vertex>::Matches Graph<Vertex>::match(
 template <class Vertex>
 typename Graph<Vertex>::Cliques Graph<Vertex>::max_weight_clique(
     const int iter) {
-    Benchmark bench;
     std::unique_ptr<int[]> weight(new int[this->size()]);
     for (int i = 0; i < this->size(); ++i)
         weight[i] = this->element(i).weight();
@@ -265,9 +262,6 @@ typename Graph<Vertex>::Cliques Graph<Vertex>::max_weight_clique(
             dbgmsg("clique push vertex = " << vnum);
         }
     }
-    log_benchmark << "time to find max.weight clique "
-                  << bench.seconds_from_start() << " wallclock seconds"
-                  << "\n";
     return clique;
 }
 

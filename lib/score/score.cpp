@@ -7,6 +7,8 @@
 #include "statchem/fileio/inout.hpp"
 #include "statchem/helper/help.hpp"
 #include "statchem/helper/path.hpp"
+#include "statchem/helper/benchmark.hpp"
+#include "statchem/helper/logger.hpp"
 #include "statchem/molib/molecule.hpp"
 using namespace std;
 

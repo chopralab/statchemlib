@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "statchem/geometry/coordinate.hpp"
-#include "statchem/helper/benchmark.hpp"
 #include "statchem/modeler/systemtopology.hpp"
 #include "statchem/modeler/topology.hpp"
 #include "statchem/molib/molecule.hpp"

@@ -1,4 +1,5 @@
 #include "statchem/parser/parser.hpp"
+#include "statchem/helper/logger.hpp"
 
 using namespace statchem::molib;
 

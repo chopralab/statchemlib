@@ -1,5 +1,6 @@
 #include "AllScorePose.hpp"
 
+#include <iostream>
 #include <thread>
 
 #include <boost/program_options.hpp>
@@ -29,11 +30,15 @@ AllScorePose::AllScorePose() {}
 
 bool AllScorePose::process_options(int argc, char* argv[]) {
     auto starting_inputs = common_starting_inputs();
+    starting_inputs.add_options()(
+        "ncpu,n", po::value<int>()->default_value(-1),
+        "Number of CPUs to use concurrently (use -1 to use all CPUs)");
 
     po::options_description scoring_options("Scoring Function Arguments");
     scoring_options.add_options()(
-        "dist", po::value<std::string>()->default_value(
-                    "data/csd_complete_distance_distributions.txt.xz"),
+        "dist",
+        po::value<std::string>(&__dist)->default_value(
+            "data/csd_complete_distance_distributions.txt.xz"),
         "Select one of the interatomic distance distribution file(s) "
         "provided with this program");
 

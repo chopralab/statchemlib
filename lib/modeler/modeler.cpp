@@ -11,6 +11,8 @@
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/helper/help.hpp"
+#include "statchem/helper/benchmark.hpp"
+#include "statchem/helper/logger.hpp"
 #include "statchem/fileio/inout.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/systemtopology.hpp"

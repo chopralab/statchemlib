@@ -56,7 +56,6 @@ bool MakeObjective::process_options(int argc, char* argv[]) {
     if (vm.count("help")) {
         __help_text << "This program compiles an objective function using "
                     << " a specified scoring function.\n\n";
-        __help_text << starting_inputs_help() << "\n";
         __help_text << cmdln_options << std::endl;
         return false;
     }

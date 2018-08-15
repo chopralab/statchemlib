@@ -1,10 +1,5 @@
 #ifndef ATOMTYPE_H
 #define ATOMTYPE_H
-#include <cstdlib>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <set>
 #include <string>
 #include <vector>
 #include "statchem/molib/atom.hpp"

@@ -17,6 +17,7 @@
 #include "statchem/fragmenter/unique.hpp"
 #include "statchem/geometry/geometry.hpp"
 #include "statchem/helper/benchmark.hpp"
+#include "statchem/helper/logger.hpp"
 #include "statchem/helper/renamerules.hpp"
 #include "statchem/molib/bondtype.hpp"
 #include "statchem/molib/molecule.hpp"

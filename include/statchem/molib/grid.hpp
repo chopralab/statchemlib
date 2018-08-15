@@ -1,8 +1,6 @@
 #ifndef GRID_H
 #define GRID_H
 #include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <map>
 #include <sstream>
 #include <string>

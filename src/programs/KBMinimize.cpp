@@ -1,5 +1,6 @@
 #include "KBMinimize.hpp"
 
+#include "statchem/helper/logger.hpp"
 #include <thread>
 
 #include <boost/program_options.hpp>
