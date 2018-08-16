@@ -11,6 +11,7 @@
 #include "programs/KBMinimize.hpp"
 #include "programs/PhysMinimize.hpp"
 #include "programs/MakeObjective.hpp"
+#include "programs/KBDynamics.hpp"
 
 using namespace statchem_prog;
 
@@ -21,6 +22,7 @@ ProgramManager::ProgramManager() {
     this->add_format<KBMinimize>();
     this->add_format<PhysMinimize>();
     this->add_format<MakeObjective>();
+    this->add_format<KBDynamics>();
 }
 
 ProgramManager& ProgramManager::get() {

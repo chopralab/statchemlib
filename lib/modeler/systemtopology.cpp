@@ -36,7 +36,7 @@ namespace OMMIface {
 SystemTopology::~SystemTopology() {
     dbgmsg("calling destructor of SystemTopology");
     delete context;
-    delete integrator;
+    //delete integrator;
     delete system;
 }
 

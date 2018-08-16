@@ -1,4 +1,4 @@
-#include "KBMinimize.hpp"
+#include "KBDynamics.hpp"
 
 #include <thread>
 #include "statchem/helper/logger.hpp"
@@ -22,14 +22,15 @@ namespace fs = boost::filesystem;
 using namespace statchem_prog;
 
 template <>
-ProgramInfo statchem_prog::program_information<KBMinimize>() {
-    return ProgramInfo("kb_min").description(
-        "Minimize a complex using a knowledge-based potential.");
+ProgramInfo statchem_prog::program_information<KBDynamics>() {
+    return ProgramInfo("kb_dynamics")
+        .description(
+            "Run dynamics on a complex using a knowledge-based potential.");
 }
 
-KBMinimize::KBMinimize() {}
+KBDynamics::KBDynamics() {}
 
-bool KBMinimize::process_options(int argc, char* argv[]) {
+bool KBDynamics::process_options(int argc, char* argv[]) {
     auto starting_inputs = common_starting_inputs();
 
     auto score_options = scoring_options();
@@ -42,12 +43,29 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
                          po::value<double>(&__dist_cut)->default_value(6.0),
                          "Distance cutoff for intermolecular forces.");
 
+    auto dynamics_options = po::options_description("Dynamics Opetions");
+    dynamics_options.add_options()(
+        "temperature",
+        po::value<double>(&__temperature)->default_value(300.0, "300"),
+        "Temperature to run the dynamic simulation at.")(
+        "friction", po::value<double>(&__friction)->default_value(91.0, "91.0"),
+        "Friction/Collision frequency for a dynamics simulation in 1/ps")(
+        "integrator",
+        po::value<std::string>(&__integrator)->default_value("verlet"),
+        "Integrator to use: 'verlet', 'langevin', or 'brownian'")(
+        "dynamic_steps",
+        po::value<int>(&__dynamics_steps)->default_value(1000))(
+        "dynamic_step_size",
+        po::value<double>(&__dynamics_step_size)->default_value(2.0, "2.0"),
+        "Step size (in fempto seconds)");
+
     auto openmm = openmm_options();
 
     po::options_description cmdln_options;
     cmdln_options.add(starting_inputs);
     cmdln_options.add(score_options);
     cmdln_options.add(ff_min);
+    cmdln_options.add(dynamics_options);
     cmdln_options.add(openmm);
 
     po::variables_map vm;
@@ -55,7 +73,7 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
     po::notify(vm);
 
     if (vm.count("help")) {
-        __help_text << "This program performs energy minization using "
+        __help_text << "This program performs energy molecular dynamics using "
                        "bonded terms from Amber forcefield and nonbonded terms "
                        "from a generalized statistical potential.\n\n";
         __help_text << starting_inputs_help() << "\n";
@@ -79,7 +97,7 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
     return true;
 }
 
-int KBMinimize::run() {
+int KBDynamics::run() {
     if (__receptor_mols.get_idatm_types().size() == 1) {
         __receptor_mols.compute_idatm_type()
             .compute_hydrogen()
@@ -131,13 +149,18 @@ int KBMinimize::run() {
         __ffield.insert_topology(protein);
         __ffield.insert_topology(ligand);
 
-        statchem::OMMIface::Modeler modeler(__ffield, "kb", __mini_tol,
-                                            __iter_max);
+        statchem::OMMIface::Modeler modeler(
+            __ffield, "kb", __mini_tol, __iter_max, false, __dynamics_step_size,
+            __temperature, __friction);
+
+        modeler.set_num_steps_to_run(__dynamics_steps);
 
         modeler.add_topology(protein.get_atoms());
         modeler.add_topology(ligand.get_atoms());
 
-        modeler.init_openmm(__platform, __precision, __accelerators);
+        modeler.init_openmm(
+            __platform, __precision, __accelerators,
+            statchem::OMMIface::SystemTopology::integrator_type::verlet);
 
         modeler.add_crds(protein.get_atoms(), protein.get_crds());
         modeler.add_crds(ligand.get_atoms(), ligand.get_crds());
@@ -147,7 +170,7 @@ int KBMinimize::run() {
 
         modeler.init_openmm_positions();
 
-        modeler.minimize_state();
+        modeler.dynamics();
 
         // init with minimized coordinates
         statchem::molib::Molecule minimized_receptor(

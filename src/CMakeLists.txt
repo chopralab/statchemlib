@@ -5,6 +5,7 @@ add_executable( stch
     programs/ScorePose.cpp
     programs/AllScorePose.cpp
     programs/KBMinimize.cpp
+    programs/KBDynamics.cpp
     programs/PhysMinimize.cpp
     programs/MakeObjective.cpp
 )
