@@ -7,6 +7,7 @@ add_executable( stch
     programs/KBMinimize.cpp
     programs/KBDynamics.cpp
     programs/PhysMinimize.cpp
+    programs/PhysDynamics.cpp
     programs/MakeObjective.cpp
 )
 
