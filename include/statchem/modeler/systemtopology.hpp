@@ -103,7 +103,7 @@ class SystemTopology {
 
     void init_integrator(SystemTopology::integrator_type type,
                          const double step_size_in_ps,
-                         const double temperature_in_kevin,
+                         const double temperature_in_kelvin,
                          const double friction_in_per_ps);
 
     void init_platform(const std::string& platform,
@@ -116,7 +116,7 @@ class SystemTopology {
     void init_bonded(Topology& topology, const bool use_constraints);
     void init_positions(const geometry::Point::Vec& crds);
 
-    void update_thermostat(const double temperature_in_kevin,
+    void update_thermostat(const double temperature_in_kelvin,
                            const double collision_frequency);
 
     geometry::Point::Vec get_positions_in_nm();
