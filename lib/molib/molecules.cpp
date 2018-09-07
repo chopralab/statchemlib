@@ -168,7 +168,19 @@ Molecules& Molecules::erase_hydrogen() {
         // Remove hydrogens added to protonated ions as well
         if (!(help::standard_residues.count(residue.resn()) ||
               help::ions.count(residue.resn()))) {
-            residue.erase_hydrogen();
+            residue.erase_hydrogen(false);
+        }
+    }
+    return *this;
+}
+
+Molecules& Molecules::erase_temporary_hydrogen() {
+    for (auto& presidue : this->get_residues()) {
+        Residue& residue = *presidue;
+        // Remove hydrogens added to protonated ions as well
+        if (!(help::standard_residues.count(residue.resn()) ||
+              help::ions.count(residue.resn()))) {
+            residue.erase_hydrogen(true);
         }
     }
     return *this;

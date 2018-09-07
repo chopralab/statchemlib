@@ -56,6 +56,7 @@ class Molecules : public template_map_container<Molecule, Molecules, NRset> {
     Molecules& compute_chirality();
     Molecules& refine_idatm_type();
     Molecules& erase_hydrogen();
+    Molecules& erase_temporary_hydrogen();
     Molecules& compute_ring_type();
     Molecules& compute_gaff_type();
     Molecules& compute_rotatable_bonds();

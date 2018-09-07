@@ -13,6 +13,7 @@
 #include "programs/MakeObjective.hpp"
 #include "programs/KBDynamics.hpp"
 #include "programs/PhysDynamics.hpp"
+#include "programs/AssignAtomTypes.hpp"
 
 using namespace statchem_prog;
 
@@ -25,6 +26,7 @@ ProgramManager::ProgramManager() {
     this->add_format<MakeObjective>();
     this->add_format<KBDynamics>();
     this->add_format<PhysDynamics>();
+    this->add_format<AssignAtomTypes>();
 }
 
 ProgramManager& ProgramManager::get() {

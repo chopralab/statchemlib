@@ -156,16 +156,17 @@ void Residue::compute_hydrogen() {
         throw e;
     }
 }
-void Residue::erase_hydrogen() {
+void Residue::erase_hydrogen(bool temp_only) {
     Atom::Vec natoms = this->get_atoms();
     natoms.erase(
         std::remove_if(
             natoms.begin(), natoms.end(),
-            [this](Atom* patom) -> bool {
+            [this, temp_only](Atom* patom) -> bool {
 
                 Atom& hatom = *patom;
                 dbgmsg("deleting hydrogens for residue = " << this->resn());
-                if (hatom.element() == Element::H) {
+                if (hatom.element() == Element::H &&
+                     (!temp_only || hatom.crd() == statchem::geometry::Coordinate(0,0,0)) ) {
                     dbgmsg("deleting this hydrogen atom : " << hatom);
                     // H is always bonded to just one other heavy atom
                     auto& bondee = hatom[0];

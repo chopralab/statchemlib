@@ -9,6 +9,7 @@ add_executable( stch
     programs/PhysMinimize.cpp
     programs/PhysDynamics.cpp
     programs/MakeObjective.cpp
+    programs/AssignAtomTypes.cpp
 )
 
 target_include_directories(stch PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

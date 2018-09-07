@@ -78,7 +78,7 @@ class Residue : public template_map_container<Atom, Residue, Chain, int> {
 
     // NOTE: implementation in hydrogens.cpp
     void compute_hydrogen();
-    void erase_hydrogen();
+    void erase_hydrogen(bool temp_only = false);
 
     friend std::ostream& operator<<(std::ostream& stream, const Residue& r);
 };

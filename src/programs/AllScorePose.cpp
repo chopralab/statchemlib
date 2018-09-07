@@ -51,7 +51,7 @@ bool AllScorePose::process_options(int argc, char* argv[]) {
     po::notify(vm);
 
     if (vm.count("help")) {
-        __help_text << "This program scores complexes using all the scoring"
+        __help_text << "This program scores complexes using all the scoring "
                     << "functions provided by StatChemLib.\n\n";
         __help_text << starting_inputs_help() << "\n";
         __help_text << cmdln_options << std::endl;
