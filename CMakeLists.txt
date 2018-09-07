@@ -42,19 +42,8 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-if (NOT OPENMM_ROOT_DIR)
-    include(BuildOpenMM)
-else()
-    find_package(OpenMM REQUIRED COMPONENTS openmm)
-    list(APPEND CANDOCK_ADDITIONAL_LD_PATH ${OPENMM_ROOT_DIR}/lib/)
-endif()
-
-if (NOT GSL_ROOT_DIR)
-    include(BuildGSL)
-else()
-    find_package(GSL REQUIRED)
-    list(APPEND CANDOCK_ADDITIONAL_LD_PATH ${GSL_ROOT_DIR}/lib/)
-endif()
+find_package(OpenMM REQUIRED COMPONENTS openmm)
+find_package(GSL REQUIRED)
 
 include_directories(${OPENMM_INCLUDE_DIR})
 include_directories(${GSL_INCLUDE_DIRS})
