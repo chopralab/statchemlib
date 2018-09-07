@@ -205,7 +205,7 @@ void SystemTopology::unmask_forces(const int atom_idx,
 
 void SystemTopology::init_integrator(SystemTopology::integrator_type type,
                                      const double step_size_in_ps,
-                                     const double temperature_in_kevin,
+                                     const double temperature_in_kelvin,
                                      const double friction_in_per_ps) {
     if (integrator != nullptr) throw Error("Integrator already initialized");
 
@@ -214,7 +214,7 @@ void SystemTopology::init_integrator(SystemTopology::integrator_type type,
     switch (__integrator_used) {
         case verlet:
             __thermostat_idx = system->addForce(new OpenMM::AndersenThermostat(
-                temperature_in_kevin, friction_in_per_ps));
+                temperature_in_kelvin, friction_in_per_ps));
         // Fall through
         case none:
         default:
@@ -222,11 +222,11 @@ void SystemTopology::init_integrator(SystemTopology::integrator_type type,
             break;
         case langevin:
             integrator = new OpenMM::LangevinIntegrator(
-                temperature_in_kevin, friction_in_per_ps, step_size_in_ps);
+                temperature_in_kelvin, friction_in_per_ps, step_size_in_ps);
             break;
         case brownian:
             integrator = new OpenMM::BrownianIntegrator(
-                temperature_in_kevin, friction_in_per_ps, step_size_in_ps);
+                temperature_in_kelvin, friction_in_per_ps, step_size_in_ps);
             break;
     }
 }
@@ -290,26 +290,26 @@ void SystemTopology::init_particles(Topology& topology) {
     }
 }
 
-void SystemTopology::update_thermostat(const double temperature_in_kevin,
+void SystemTopology::update_thermostat(const double temperature_in_kelvin,
                                        const double collision_frequency) {
     switch (__integrator_used) {
         case verlet:
             dynamic_cast<OpenMM::AndersenThermostat&>(
                 system->getForce(__thermostat_idx))
-                .setDefaultTemperature(temperature_in_kevin);
+                .setDefaultTemperature(temperature_in_kelvin);
             dynamic_cast<OpenMM::AndersenThermostat&>(
                 system->getForce(__thermostat_idx))
                 .setDefaultCollisionFrequency(collision_frequency);
             break;
         case langevin:
             dynamic_cast<OpenMM::LangevinIntegrator*>(integrator)
-                ->setTemperature(temperature_in_kevin);
+                ->setTemperature(temperature_in_kelvin);
             dynamic_cast<OpenMM::LangevinIntegrator*>(integrator)
                 ->setFriction(collision_frequency);
             break;
         case brownian:
             dynamic_cast<OpenMM::BrownianIntegrator*>(integrator)
-                ->setTemperature(temperature_in_kevin);
+                ->setTemperature(temperature_in_kelvin);
             dynamic_cast<OpenMM::BrownianIntegrator*>(integrator)
                 ->setFriction(collision_frequency);
             break;
