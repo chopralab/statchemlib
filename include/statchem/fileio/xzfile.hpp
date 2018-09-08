@@ -1,12 +1,12 @@
 #ifndef XZFILE_H
 #define XZFILE_H
 
-#include <sstream>
+#include <string>
 
 namespace statchem {
 namespace fileio {
 
-std::stringstream read_xzfile(const std::string& filename);
+std::string read_xzfile(const std::string& filename);
 
 }
 }

@@ -8,7 +8,7 @@
 namespace statchem {
 namespace fileio {
 
-std::stringstream read_xzfile(const std::string& filename) {
+std::string read_xzfile(const std::string& filename) {
     
     std::ifstream checking(filename, std::ifstream::binary);
     std::vector<char> src((std::istreambuf_iterator<char>(checking)),
@@ -60,9 +60,7 @@ std::stringstream read_xzfile(const std::string& filename) {
     // very efficient in C++11!
     dst.resize(strm.total_out);
 
-    std::stringstream out(std::string(dst.data(), dst.size()));
-
-    return out;
+    return std::string(dst.data(), dst.size());
 }
 
 }

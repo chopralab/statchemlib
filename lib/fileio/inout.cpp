@@ -97,7 +97,8 @@ void read_file(const string& name, vector<string>& s, streampos& pos_in_file,
     dbgmsg(pos_in_file);
     if(name.substr( name.length() - 2 ) == "xz") {
         auto ss = read_xzfile(name);
-        read_stream(ss, s, pos_in_file, num_occur, pattern);
+        auto sss = std::stringstream(ss);
+        read_stream(sss, s, pos_in_file, num_occur, pattern);
     }
 #ifndef _WINDOWS
     int fd = __lock(name);
