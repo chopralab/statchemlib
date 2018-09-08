@@ -49,7 +49,10 @@ include_directories(${OPENMM_INCLUDE_DIR})
 include_directories(${GSL_INCLUDE_DIRS})
 include_directories(${LIBLZMA_INCLUDE_DIRS})
 
+install(DIRECTORY include/ DESTINATION include)
 include_directories(BEFORE include)
+
+install(DIRECTORY data/ DESTINATION data)
 
 # This order is important as CMAKE needs to find certain files
 add_subdirectory(lib)
@@ -57,4 +60,3 @@ add_subdirectory(src)
 
 enable_testing()
 add_subdirectory(tests)
-#add_subdirectory(doc)
