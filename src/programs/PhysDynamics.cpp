@@ -125,8 +125,8 @@ int PhysDynamics::run() {
         __ffield.insert_topology(ligand);
 
         statchem::OMMIface::Modeler modeler(
-            __ffield, "phy", __mini_tol, __iter_max, false, __dynamics_step_size,
-            __temperature, __friction);
+            __ffield, "phy", 0.0, __mini_tol, __iter_max, false,
+            __dynamics_step_size, __temperature, __friction);
 
         modeler.set_num_steps_to_run(__dynamics_steps);
 

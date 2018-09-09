@@ -112,7 +112,7 @@ class SystemTopology {
 
     void init_particles(Topology& topology);
     void init_physics_based_force(Topology& topology);
-    void init_knowledge_based_force(Topology& topology);
+    void init_knowledge_based_force(Topology& topology, double scale);
     void init_bonded(Topology& topology, const bool use_constraints);
     void init_positions(const geometry::Point::Vec& crds);
 

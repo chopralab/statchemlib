@@ -372,7 +372,7 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     }
 }
 
-void SystemTopology::init_knowledge_based_force(Topology& topology) {
+void SystemTopology::init_knowledge_based_force(Topology& topology, double scale) {
     if (__kbforce_idx != -1) system->removeForce(__kbforce_idx);
 
     std::set<int> used_atom_types;
@@ -418,7 +418,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology) {
                 xsize++;
 
                 for (size_t i = 0; i < kb.potential.size(); i++)
-                    table.push_back(kb.potential[i]);
+                    table.push_back(kb.potential[i] * scale);
             } catch (ParameterError& e) {
                 cerr << e.what() << endl;
                 cerr << "This is normal for atom types only present in the "

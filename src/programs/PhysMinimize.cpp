@@ -101,8 +101,8 @@ int PhysMinimize::run() {
         __ffield.insert_topology(protein);
         __ffield.insert_topology(ligand);
 
-        statchem::OMMIface::Modeler modeler(__ffield, "phy", __mini_tol,
-                                            __iter_max);
+        statchem::OMMIface::Modeler modeler(__ffield, "phy", 0.0,
+                                            __mini_tol, __iter_max);
 
         modeler.add_topology(protein.get_atoms());
         modeler.add_topology(ligand.get_atoms());
