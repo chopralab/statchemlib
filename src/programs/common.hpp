@@ -64,12 +64,14 @@ inline bool process_starting_inputs(po::variables_map& vm,
     } else {
         auto receptor = vm["receptor"].as<std::string>();
         statchem::parser::FileParser rpdb(
-            receptor, statchem::parser::pdb_read_options::all_models);
+            receptor, statchem::parser::pdb_read_options::all_models | 
+            statchem::parser::pdb_read_options::hydrogens);
         rpdb.parse_molecule(rec_mols);
 
         auto ligand = vm["ligand"].as<std::string>();
         statchem::parser::FileParser lpdb(
-            ligand, statchem::parser::pdb_read_options::all_models);
+            ligand, statchem::parser::pdb_read_options::all_models |
+            statchem::parser::pdb_read_options::hydrogens);
         lpdb.parse_molecule(lig_mols);
 
         if (rec_mols.size() == 1) {

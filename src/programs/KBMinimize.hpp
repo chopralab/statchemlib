@@ -29,6 +29,7 @@ class KBMinimize : public Program {
     std::string __func;
     double __cutoff;
     double __step_size;
+    double __scale;
     std::unique_ptr<statchem::score::KBFF> __score;
 
     statchem::OMMIface::ForceField __ffield;

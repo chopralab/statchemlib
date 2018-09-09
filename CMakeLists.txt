@@ -50,8 +50,8 @@ include_directories(${GSL_INCLUDE_DIRS})
 include_directories(${LIBLZMA_INCLUDE_DIRS})
 
 install(DIRECTORY include/ DESTINATION include)
-include_directories(BEFORE include)
 
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 install(DIRECTORY data/ DESTINATION data)
 
 # This order is important as CMAKE needs to find certain files

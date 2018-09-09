@@ -28,6 +28,7 @@ class Modeler {
    private:
     const ForceField* __ffield;
     std::string __fftype;
+    double __scale;
     double __tolerance;
     int __max_iterations;
     bool __use_constraints;
@@ -43,9 +44,10 @@ class Modeler {
 
    public:
     Modeler(const ForceField& ffield, const std::string& fftype = "none",
-            double tolerance = 0.0001, int max_iterations = 100,
-            bool use_constraints = false, double step_size_in_fs = 2.0,
-            double temperature = 300.0, double friction = 91.0);
+            double scale = 1.0, double tolerance = 0.0001,
+            int max_iterations = 100, bool use_constraints = false,
+            double step_size_in_fs = 2.0, double temperature = 300.0,
+            double friction = 91.0);
 
     void mask(const molib::Atom::Vec& atoms);
     void unmask(const molib::Atom::Vec& atoms);
@@ -67,7 +69,8 @@ class Modeler {
     void dynamics();
 
     void init_openmm_positions();
-    void init_openmm(const std::string& platform, const std::string& precision = "double",
+    void init_openmm(const std::string& platform,
+                     const std::string& precision = "double",
                      const std::string& accelerators = "",
                      SystemTopology::integrator_type type =
                          SystemTopology::integrator_type::none);

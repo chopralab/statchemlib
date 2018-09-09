@@ -41,7 +41,9 @@ bool KBDynamics::process_options(int argc, char* argv[]) {
     auto ff_min = forcefield_options();
     ff_min.add_options()("distance_cutoff",
                          po::value<double>(&__dist_cut)->default_value(6.0),
-                         "Distance cutoff for intermolecular forces.");
+                         "Distance cutoff for intermolecular forces.")(
+                         "scale", po::value<double>(&__scale)->default_value(1.0),
+                         "Scale factor for the knowledge-based force.");
 
     auto dynamics_options = po::options_description("Dynamics Opetions");
     dynamics_options.add_options()(
@@ -150,8 +152,8 @@ int KBDynamics::run() {
         __ffield.insert_topology(ligand);
 
         statchem::OMMIface::Modeler modeler(
-            __ffield, "kb", __mini_tol, __iter_max, false, __dynamics_step_size,
-            __temperature, __friction);
+            __ffield, "kb", __scale, __mini_tol, __iter_max, false,
+            __dynamics_step_size, __temperature, __friction);
 
         modeler.set_num_steps_to_run(__dynamics_steps);
 

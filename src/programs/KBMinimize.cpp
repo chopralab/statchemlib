@@ -40,7 +40,9 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
     auto ff_min = forcefield_options();
     ff_min.add_options()("distance_cutoff",
                          po::value<double>(&__dist_cut)->default_value(6.0),
-                         "Distance cutoff for intermolecular forces.");
+                         "Distance cutoff for intermolecular forces.")(
+                         "scale", po::value<double>(&__scale)->default_value(1.0),
+                         "Scale factor for the knowledge-based force.");
 
     auto openmm = openmm_options();
 
@@ -131,8 +133,8 @@ int KBMinimize::run() {
         __ffield.insert_topology(protein);
         __ffield.insert_topology(ligand);
 
-        statchem::OMMIface::Modeler modeler(__ffield, "kb", __mini_tol,
-                                            __iter_max);
+        statchem::OMMIface::Modeler modeler(__ffield, "kb", __scale,
+                                            __mini_tol, __iter_max);
 
         modeler.add_topology(protein.get_atoms());
         modeler.add_topology(ligand.get_atoms());

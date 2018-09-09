@@ -71,7 +71,7 @@ TEST_CASE("Knowledge-based energy minization") {
     ffield.insert_topology(protein);
     ffield.insert_topology(ligand);
 
-    statchem::OMMIface::Modeler modeler(ffield, "kb", 0.00001, 100, false);
+    statchem::OMMIface::Modeler modeler(ffield, "kb", 1.0, 0.00001, 100);
     modeler.set_num_steps_to_run(1000);
 
     modeler.add_topology(protein.get_atoms());
@@ -149,8 +149,7 @@ TEST_CASE("Physics-based energy minization") {
     ffield.insert_topology(protein);
     ffield.insert_topology(ligand);
 
-    statchem::OMMIface::Modeler modeler(ffield, "phy", 0.00001, 100,
-                                        0.00000000001);
+    statchem::OMMIface::Modeler modeler(ffield, "phy", 1.0, 0.00001, 100);
 
     modeler.add_topology(protein.get_atoms());
     modeler.add_topology(ligand.get_atoms());

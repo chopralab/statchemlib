@@ -8,12 +8,12 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <regex>
+#include "statchem/fileio/inout.hpp"
+#include "statchem/helper/benchmark.hpp"
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/helper/help.hpp"
-#include "statchem/helper/benchmark.hpp"
 #include "statchem/helper/logger.hpp"
-#include "statchem/fileio/inout.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/systemtopology.hpp"
 #include "statchem/modeler/topology.hpp"
@@ -35,11 +35,12 @@ ostream& operator<<(ostream& os, const vector<OpenMM::Vec3>& positions) {
     return os;
 }
 
-Modeler::Modeler(const ForceField& ffield, const string& fftype,
+Modeler::Modeler(const ForceField& ffield, const string& fftype, double scale,
                  double tolerance, int max_iterations, bool use_constraints,
                  double step_size_in_fs, double temperature, double friction)
     : __ffield(&ffield),
       __fftype(fftype),
+      __scale(scale),
       __tolerance(tolerance),
       __max_iterations(max_iterations),
       __use_constraints(use_constraints),
@@ -95,8 +96,7 @@ geometry::Point::Vec Modeler::get_state(const molib::Atom::Vec& atoms) {
         crds.emplace_back(
             geometry::Point(positions_in_nm[idx].x() * OpenMM::AngstromsPerNm,
                             positions_in_nm[idx].y() * OpenMM::AngstromsPerNm,
-                            positions_in_nm[idx].z() * OpenMM::AngstromsPerNm)
-        );
+                            positions_in_nm[idx].z() * OpenMM::AngstromsPerNm));
     }
 
     return crds;
@@ -133,7 +133,7 @@ void Modeler::init_openmm(const std::string& platform,
     __system_topology.init_bonded(__topology, __use_constraints);
 
     if (__fftype == "kb") {
-        __system_topology.init_knowledge_based_force(__topology);
+        __system_topology.init_knowledge_based_force(__topology, __scale);
     } else if (__fftype == "phy") {
         __system_topology.init_physics_based_force(__topology);
     } else if (__fftype == "none") {
