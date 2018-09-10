@@ -58,5 +58,9 @@ install(DIRECTORY data/ DESTINATION data)
 add_subdirectory(lib)
 add_subdirectory(src)
 
-enable_testing()
-add_subdirectory(tests)
+option(ENABLE_TESTING "Enable testing for CANDIY projects" OFF)
+
+if (${ENABLE_TESTING})
+    enable_testing()
+    add_subdirectory(tests)
+endif()
