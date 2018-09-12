@@ -1,13 +1,13 @@
 #include "statchem/score/kbff.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
-#include "statchem/helper/help.hpp"
-#include "statchem/helper/path.hpp"
+#include "statchem/fileio/inout.hpp"
 #include "statchem/helper/benchmark.hpp"
+#include "statchem/helper/help.hpp"
 #include "statchem/helper/logger.hpp"
+#include "statchem/helper/path.hpp"
 #include "statchem/score/interpolation.hpp"
 #include "statchem/score/powerfit.hpp"
-#include "statchem/fileio/inout.hpp"
 using namespace std;
 
 namespace statchem {
@@ -27,6 +27,13 @@ ostream& operator<<(ostream& stream, const KBFF& score) {
         }
     }
     return stream;
+}
+
+bool KBFF::is_availible(int idatm_type1, int idatm_type2) {
+    int lower = idatm_type1 < idatm_type2? idatm_type1 : idatm_type2;
+    int higher= idatm_type1 < idatm_type2? idatm_type1 : idatm_type2;
+
+    return __unavailible.find({lower, higher}) == __unavailible.end();
 }
 
 KBFF& KBFF::output_objective_function(const string& obj_dir) {
@@ -73,7 +80,7 @@ KBFF& KBFF::parse_objective_function(const string& obj_dir,
         throw Error("Objective function not found! check 'obj_dir' and 'step'");
     }
 
-    for (auto& atom_pair : __avail_prot_lig) {
+    for (const auto& atom_pair : __avail_prot_lig) {
         const string idatm_type1 = help::idatm_unmask[atom_pair.first];
         const string idatm_type2 = help::idatm_unmask[atom_pair.second];
 
@@ -93,7 +100,7 @@ KBFF& KBFF::parse_objective_function(const string& obj_dir,
 
         vector<string> contents;
         fileio::read_file((path_to_objective_function / filename).string(),
-                         contents);
+                          contents);
 
         for (auto& line : contents) {
             stringstream ss(line);
@@ -246,23 +253,23 @@ KBFF& KBFF::compile_objective_function() {
         }
 
         // find up to 3 most negative derivatives and store index to slope
-        set<size_t> slope;
+        std::set<size_t> slope_idx;
         for (size_t i = 0; i < 3 && i < deriva.size(); ++i) {
             auto it = min_element(deriva.begin(), deriva.end(),
                                   [](double i, double j) { return i < j; });
-            if (*it < 0) {  // derivative < 0
-                int i0 = repulsion_idx + (it - deriva.begin());
+            if (*it < 0.0) {  // derivative < 0
+                size_t i0 = repulsion_idx + (it - deriva.begin());
                 deriva.erase(it);
-                slope.insert(i0);
-                slope.insert(i0 + 1);
+                slope_idx.insert(i0);
+                slope_idx.insert(i0 + 1);
             }
         }
 
         try {
-            if (slope.size() <= 1)
+            if (slope_idx.size() <= 1)
                 throw InterpolationError("warning : slope not found in data");
 
-            repulsion_idx = *slope.begin();  // correct repulsion_idx
+            repulsion_idx = *slope_idx.begin();  // correct repulsion_idx
 
             dbgmsg("atom1 = "
                    << idatm_type1 << " atom2 = " << idatm_type2 << " vdW_sum = "
@@ -270,8 +277,9 @@ KBFF& KBFF::compile_objective_function() {
                    << " step_non_bond = " << __step_non_bond
                    << " repulsion distance (below is forbidden area) = "
                    << __get_lower_bound(repulsion_idx) << " minimum distance = "
-                   << __get_lower_bound(global_min_idx) << " begin slope idx = "
-                   << *slope.begin() << " end slope idx = " << *slope.rbegin());
+                   << __get_lower_bound(global_min_idx)
+                   << " begin slope idx = " << *slope_idx.begin()
+                   << " end slope idx = " << *slope_idx.rbegin());
 
             // dbgmsg("energies before interpolations : " << endl
             //                                           << energy);
@@ -310,11 +318,11 @@ KBFF& KBFF::compile_objective_function() {
             }
 
             // add repulsion term by fitting 1/x**12 function to slope points
-            const double x1 = __get_lower_bound(*slope.begin());
-            const double x2 = __get_lower_bound(*slope.rbegin());
+            const double x1 = __get_lower_bound(*slope_idx.begin());
+            const double x2 = __get_lower_bound(*slope_idx.rbegin());
             std::vector<double> r;
             std::vector<double> pot;
-            int i = 0;
+            size_t i = 0;
             for (double xi = dataX.front(); xi <= dataX.back();
                  xi += __step_non_bond) {
                 if (xi >= x1 && xi <= x2) {
@@ -335,6 +343,13 @@ KBFF& KBFF::compile_objective_function() {
             dbgmsg("atom1 = " << idatm_type1 << " atom2 = " << idatm_type2
                               << " coeffA = " << coeffA
                               << " coeffB = " << coeffB << " WSSR = " << WSSR);
+
+            if (coeffA < 0) {
+                log_note << "Atom types: " << idatm_type1 << " and "
+                         << idatm_type2
+                         << " are still attractive at the repulsive index.\n";
+                coeffA *= -1;
+            }
 
             vector<double> repulsion;
             // Add starting point for x=0 (so it's its not NaN).
@@ -390,10 +405,8 @@ KBFF& KBFF::compile_objective_function() {
 #endif
         }  // END of try
         catch (InterpolationError& e) {
-            dbgmsg(e.what());
-            const int n = (int)std::floor(__dist_cutoff / __step_non_bond) + 1;
-            dbgmsg("n = " << n);
-            __energies[atom_pair].assign(n, 0.0);
+            log_warning << e.what() << "\n";
+            __unavailible.insert({atom_pair.first, atom_pair.second});
         }
     }
     dbgmsg("out of loop");

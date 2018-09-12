@@ -8,6 +8,7 @@ namespace score {
 class KBFF : public Score {
     AtomPairValues __energies;  // objective function
     double __step_non_bond;
+    std::set<pair_of_ints> __unavailible;
 
    public:
     KBFF(const std::string& ref_state, const std::string& comp,
@@ -18,6 +19,9 @@ class KBFF : public Score {
 
     double get_step_nonbond() const { return __step_non_bond; }
     const AtomPairValues& get_energies() const { return __energies; }
+
+    const std::set<pair_of_ints>& get_unavailible() const { return __unavailible; }
+    bool is_availible(int idatm1, int idatm2);
 
     KBFF& compile_objective_function();
     KBFF& parse_objective_function(const std::string& obj_dir,

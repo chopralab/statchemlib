@@ -428,6 +428,21 @@ const double vdw_radius[] = {
     2      // Zr
 };
 
+const std::string idatm_element[] = {
+    "Ac", "Ag", "Al", "Am", "Ar", "As", "At", "Au", "B",  "Ba", "Be", "Bh",
+    "Bi", "Bk", "Br", "C",  "C",  "C",  "C",  "C",  "Ca", "C",  "C",  "Cd",
+    "Ce", "Cf", "Cl", "Cm", "Co", "Cr", "Cs", "Cu", "D",  "Db", "D",  "Ds",
+    "Dy", "Er", "Es", "Eu", "F",  "Fe", "Fm", "Fr", "Ga", "Gd", "Ge", "H",
+    "H",  "He", "Hf", "Hg", "Ho", "Hs", "I",  "In", "Ir", "K",  "Kr", "La",
+    "li", "Lr", "Lu", "Lw", "Md", "Mg", "Mn", "Mo", "Mt", "N",  "N",  "N",
+    "N",  "N",  "N",  "N",  "Na", "Nb", "Nd", "Ne", "N",  "Ni", "No", "N",
+    "Np", "N",  "N",  "O",  "O",  "O",  "O",  "O",  "O",  "O",  "O",  "O",
+    "Os", "P",  "P",  "Pa", "P",  "Pb", "Pd", "Pm", "Po", "P",  "Pr", "Pt",
+    "Pu", "Ra", "Rb", "Re", "Rf", "Rh", "Rn", "Ru", "S",  "S",  "S",  "S",
+    "S",  "S",  "S",  "Sb", "Sc", "Se", "Sg", "Si", "Sm", "Sn", "S",  "Sr",
+    "S",  "Ta", "Tb", "Tc", "Te", "Th", "Ti", "Tl", "Tm", "U",  "V",  "W",
+    "Xe", "Y",  "Yb", "Zn", "Zr"};
+
 const string EW = "^N|^O|F|Cl|Br";  // electron withdrawing atoms
 const string XX = "^C|^N|^O|^S|^P";
 const string XA = "^O|^S";
