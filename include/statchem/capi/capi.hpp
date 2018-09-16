@@ -70,6 +70,10 @@ STATCHEM_EXPORT size_t set_positions_receptor(const size_t* atoms,
                                              const float* positions,
                                              size_t size);
 
+STATCHEM_EXPORT size_t is_adjacent(size_t atom1, size_t atom2);
+STATCHEM_EXPORT size_t add_ligand_bond(size_t atom1, size_t atom2);
+STATCHEM_EXPORT size_t remove_ligand_bond(size_t atom1, size_t atom2);
+
 STATCHEM_EXPORT size_t minimize_complex(size_t max_iter);
 
 #ifdef __cplusplus

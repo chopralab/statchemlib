@@ -42,17 +42,7 @@ size_t initialize_complex(const char* filename) {
 
         rpdb.parse_molecule(*__receptor);
 
-        __receptor->compute_idatm_type()
-            /*.compute_hydrogen()
-                .compute_bond_order()
-                .compute_bond_gaff_type()
-                .refine_idatm_type()
-                .erase_hydrogen()  // needed because refine changes connectivities
-                .compute_hydrogen()   // needed because refine changes connectivities
-                .compute_ring_type()
-                .compute_gaff_type()
-                .compute_rotatable_bonds() // relies on hydrogens being assigned
-                .erase_hydrogen()*/;
+        __receptor->compute_idatm_type();
 
         __gridrec = std::unique_ptr<statchem::molib::Atom::Grid>(
             new statchem::molib::Atom::Grid(__receptor->get_atoms()));
@@ -64,17 +54,7 @@ size_t initialize_complex(const char* filename) {
 
         lpdb.parse_molecule(*__ligand);
 
-        __ligand->compute_idatm_type()
-            /*.compute_hydrogen()
-                .compute_bond_order()
-                .compute_bond_gaff_type()
-                .refine_idatm_type()
-                .erase_hydrogen()  // needed because refine changes connectivities
-                .compute_hydrogen()   // needed because refine changes connectivities
-                .compute_ring_type()
-                .compute_gaff_type()
-                .compute_rotatable_bonds() // relies on hydrogens being assigned
-                .erase_hydrogen()*/;
+        __ligand->compute_idatm_type();
 
         return 1;
     } catch (std::exception& e) {
@@ -605,6 +585,36 @@ size_t set_positions_receptor(const size_t* atoms, const float* positions,
             std::string("Error in setting receptor coordinates: ") + e.what();
         return 0;
     }
+}
+
+size_t is_adjacent(size_t atom1, size_t atom2) {
+    auto& residue = __ligand->first().first().first().first().first();
+
+    auto& atom1_obj = residue.atom(atom1);
+    auto& atom2_obj = residue.atom(atom2);
+
+    return atom1_obj.is_adjacent(atom2_obj);
+}
+
+size_t add_ligand_bond(size_t atom1, size_t atom2) {
+    auto& residue = __ligand->first().first().first().first().first();
+
+    auto& atom1_obj = residue.atom(atom1);
+    auto& atom2_obj = residue.atom(atom2);
+
+    atom1_obj.connect(atom2_obj);
+
+    return atom1_obj.is_adjacent(atom2_obj);
+}
+
+size_t remove_ligand_bond(size_t atom1, size_t atom2) {
+    auto& residue = __ligand->first().first().first().first().first();
+
+    auto& atom1_obj = residue.atom(atom1);
+    auto& atom2_obj = residue.atom(atom2);
+
+    atom1_obj.erase_bond(atom2_obj);
+    return (!atom1_obj.is_adjacent(atom2_obj));
 }
 
 size_t minimize_complex(size_t max_iter) {
