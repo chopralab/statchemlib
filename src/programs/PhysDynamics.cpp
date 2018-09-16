@@ -145,6 +145,7 @@ int PhysDynamics::run() {
 
         modeler.init_openmm_positions();
 
+        modeler.minimize_state();
         modeler.dynamics();
 
         // init with minimized coordinates

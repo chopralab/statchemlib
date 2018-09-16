@@ -871,7 +871,7 @@ void SystemTopology::minimize(const double tolerance,
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
-
+    context->setVelocitiesToTemperature(300);
     integrator->step(steps);
 }
 }

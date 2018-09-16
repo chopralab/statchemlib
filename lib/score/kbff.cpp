@@ -14,6 +14,19 @@ namespace statchem {
 
 namespace score {
 
+std::map<std::string, std::pair<double, double>> gaff_lj = {
+    {"H", {1.1870, 0.0157}},
+    {"O", {1.6612, 0.2100}},
+    {"C", {1.9080, 0.0860}},
+    {"N", {1.8240, 0.1700}},
+    {"S", {2.0000, 0.2500}},
+    {"P", {2.1000, 0.2000}},
+    {"F", {1.7500, 0.0610}},
+    {"Cl",{1.9480, 0.2650}},
+    {"Br",{2.0200, 0.4200}},
+    {"I", {2.1500, 0.5000}},
+};
+
 ostream& operator<<(ostream& stream, const KBFF& score) {
     for (auto& kv : score.__energies_scoring) {
         auto& atom_pair = kv.first;
@@ -393,7 +406,7 @@ KBFF& KBFF::compile_objective_function() {
             potential.insert(potential.begin(), repulsion.begin(),
                              repulsion.end());
 
-            __energies[atom_pair].assign(potential.begin(), potential.end());
+            __energies[atom_pair] = std::move(potential);
 
 #ifndef NDEBUG
             for (size_t i = 0; i < potential.size(); ++i) {
@@ -407,6 +420,38 @@ KBFF& KBFF::compile_objective_function() {
         catch (InterpolationError& e) {
             log_warning << e.what() << "\n";
             __unavailible.insert({atom_pair.first, atom_pair.second});
+        
+            auto elem1 = gaff_lj.find(help::idatm_element[atom_pair.first]);
+            auto elem2 = gaff_lj.find(help::idatm_element[atom_pair.second]);
+
+            if (elem1 == gaff_lj.end() || elem2 == gaff_lj.end()) {
+                std::cerr << "Atom types [" << help::idatm_unmask[atom_pair.first]
+                          << ", " << help::idatm_unmask[atom_pair.second]
+                          << "] is not in KB or GAFF\n";
+                __energies[atom_pair].assign(gij_of_r_vals.size(), 0.0);
+                continue;
+            }
+
+            std::cerr << "Atom types [" << help::idatm_unmask[atom_pair.first]
+                        << ", " << help::idatm_unmask[atom_pair.second]
+                        << "] is taken from GAFF\n";
+
+            auto& new_pot = __energies[atom_pair];
+
+            // Keep sigma in angstroms
+            double sigma = (elem1->second.first + elem2->second.first) / 2;
+            double epsil = sqrt(elem1->second.second * elem2->second.second);
+
+            // Just a large number to avoid a divide by zero for the first item
+            new_pot.push_back(1.0e30);
+
+            double current_step = __step_non_bond;
+            for (size_t i = 1; i < gij_of_r_vals.size() *10 + 1; ++i) {
+                auto sigma_r = sigma / current_step;
+                auto lj = 4 * epsil * ( pow(sigma_r, 12) - pow(sigma_r, 6));
+                new_pot.push_back(lj);
+                current_step += __step_non_bond;
+            }
         }
     }
     dbgmsg("out of loop");

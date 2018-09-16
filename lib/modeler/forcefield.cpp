@@ -14,23 +14,9 @@
 #include "statchem/fileio/inout.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/helper/help.hpp"
-#include "statchem/helper/logger.hpp"
 #include "statchem/molib/molecule.hpp"
 #include "statchem/score/kbff.hpp"
 using namespace std;
-
-std::map<std::string, std::pair<double, double>> gaff_lj = {
-    {"H", {1.1870, 0.0157}},
-    {"O", {1.6612, 0.2100}},
-    {"C", {1.9080, 0.0860}},
-    {"N", {1.8240, 0.1700}},
-    {"S", {2.0000, 0.2500}},
-    {"P", {2.1000, 0.2000}},
-    {"F", {1.7500, 0.0610}},
-    {"Cl",{1.9480, 0.2650}},
-    {"Br",{2.0200, 0.4200}},
-    {"I", {2.1500, 0.5000}},
-};
 
 namespace statchem {
 namespace OMMIface {
@@ -398,50 +384,12 @@ ForceField& ForceField::add_kb_forcefield(const score::KBFF& score,
                                           double kb_cutoff) {
     this->kb_cutoff = kb_cutoff * OpenMM::NmPerAngstrom;
     this->step = score.get_step_nonbond() * OpenMM::NmPerAngstrom;
-    size_t dist_count = 0;
     for (auto& kv : score.get_energies()) {
         auto& atom_pair = kv.first;
         auto& energy = kv.second;
         this->kb_force_type[atom_pair.first][atom_pair.second].potential =
             energy;
-        dist_count = kv.second.size();
     }
-
-    for (const auto& atom_pair : score.get_unavailible()) {
-        auto elem1 = gaff_lj.find(help::idatm_element[atom_pair.first]);
-        auto elem2 = gaff_lj.find(help::idatm_element[atom_pair.second]);
-
-        if (elem1 == gaff_lj.end() || elem2 == gaff_lj.end()) {
-            std::cerr << "Atom types [" << help::idatm_unmask[atom_pair.first]
-                        << ", " << help::idatm_unmask[atom_pair.second]
-                        << "] is not in KB or GAFF\n";
-            this->kb_force_type[atom_pair.first][atom_pair.second].potential =
-                std::vector<double>(dist_count);
-        }
-
-        log_warning << "Atom types [" << help::idatm_unmask[atom_pair.first]
-                    << ", " << help::idatm_unmask[atom_pair.second]
-                    << "] is taken from GAFF\n";
-
-        auto& new_pot = this->kb_force_type[atom_pair.first][atom_pair.second];
-
-        // Keep sigma in angstroms
-        double sigma = (elem1->second.first + elem2->second.first) / 2;
-        double epsil = sqrt(elem1->second.second * elem2->second.second);
-        epsil *= OpenMM::KJPerKcal;
-
-        // Just a large number to avoid a divide by zero for the first item
-        new_pot.potential.push_back(1.0e30);
-
-        double current_step = score.get_step_nonbond();
-        for (size_t i = 1; i < dist_count; ++i) {
-            auto sigma_r = sigma / current_step;
-            auto lj = 4 * epsil * ( pow(sigma_r, 12) - pow(sigma_r, 6));
-            new_pot.potential.push_back(lj);
-            current_step += score.get_step_nonbond();
-        }
-    }
-    return *this;
 }
 
 ForceField& ForceField::parse_gaff_dat_file(const string& gaff_dat_file) {
