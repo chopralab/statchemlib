@@ -5,7 +5,8 @@
 #include "statchem/molib/molecule.hpp"
 #include "statchem/molib/molecules.hpp"
 #include "statchem/parser/fileparser.hpp"
-#include "statchem/parser/fileparser.hpp"
+#include "statchem/fileio/fileout.hpp"
+#include "statchem/fileio/inout.hpp"
 #include "statchem/score/kbff.hpp"
 
 #include <boost/filesystem/path.hpp>
@@ -78,6 +79,27 @@ size_t initialize_complex(const char* filename) {
         return 1;
     } catch (std::exception& e) {
         __error_string = std::string("Error in loading complex: ") + e.what();
+        return 0;
+    }
+}
+
+size_t write_complex(const char* filename) {
+    if (__ligand == nullptr || __receptor == nullptr) {
+        __error_string = std::string(
+            "You must run initialize_ligand and initialize_receptor before writing a complex");
+        return 0;
+    }
+
+    try {
+        // output docked molecule conformations
+        std::stringstream ss;
+        fileio::print_complex_pdb(
+            ss, (*__ligand)[0], (*__receptor)[0], 0.0);
+        fileio::output_file(ss.str(), filename);
+
+        return 1;
+    } catch (std::exception& e) {
+        __error_string = std::string("Error in saving complex: ") + e.what();
         return 0;
     }
 }

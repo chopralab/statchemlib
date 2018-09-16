@@ -24,6 +24,7 @@ typedef enum {
  */
 
 STATCHEM_EXPORT size_t initialize_complex(const char* filename);
+STATCHEM_EXPORT size_t write_complex(const char* filename);
 
 STATCHEM_EXPORT size_t initialize_receptor(const char* filename);
 
