@@ -1,4 +1,4 @@
-#include "statchem/interface/interface.hpp"
+#include "statchem/capi/capi.hpp"
 #include "statchem/helper/help.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/modeler.hpp"

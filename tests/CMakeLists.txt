@@ -57,6 +57,7 @@ endfunction()
 
 file(GLOB all_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/capi/*.c
 )
 
 foreach(test_file IN LISTS all_test_files)
