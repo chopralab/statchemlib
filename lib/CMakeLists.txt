@@ -1,8 +1,8 @@
 if (WIN32)
     if (NOT ${STCH_BUILD_STATIC_EXECUTABLE})
-            add_definitions( /DSTCH_SHARED_LIBRARY)
+            add_definitions( /DSTATCHEM_SHARED_LIBRARY)
     else()
-            add_definitions( /DSTCH_STATIC_LIBRARY)
+            add_definitions( /DSTATCHEM_STATIC_LIBRARY)
     endif()
 endif(WIN32)
 

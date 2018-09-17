@@ -1,10 +1,12 @@
 #include "statchem/graph/mnts.hpp"
+#include <ctime>
+
 using namespace std;
 
 namespace statchem {
 namespace graph {
 void MNTS::initialize() {
-    srand((unsigned)time(NULL));
+    srand((unsigned)std::time(NULL));
     Iteration = unique_ptr<int[]>(new int[iter]);
     len_used = unique_ptr<int[]>(new int[iter]);
     W_used = unique_ptr<int[]>(new int[iter]);

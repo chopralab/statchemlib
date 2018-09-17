@@ -1,7 +1,7 @@
 #ifndef STATCHEM_EXPORT_H_
 #define STATCHEM_EXPORT_H_
 
-#ifdef _WINDOWS
+#ifdef _MSC_VER
 // We don't want to hear about how sprintf is "unsafe".
 #pragma warning(disable : 4996)
 // Keep MS VC++ quiet about lack of dll export of private members.
