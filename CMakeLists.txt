@@ -14,31 +14,20 @@ if(${STCH_BUILD_STATIC_EXECUTABLE})
     endif()
 endif()
 
-find_package(Boost    REQUIRED  COMPONENTS filesystem system program_options)
-find_package(LibLZMA  REQUIRED)
-find_package(Git      REQUIRED)
-
 if (WIN32)
 
-    set(Boost_USE_STATIC_LIBS        OFF)
+    set(Boost_USE_STATIC_LIBS        ON)
     set(Boost_USE_MULTITHREADED      ON)    
 
-	if (${STCH_BUILD_STATIC_EXECUTABLE})
-	    set(Boost_USE_STATIC_LIBS        ON)
-	    set(Boost_USE_STATIC_RUNTIME     ON)
-	    set(BOOST_ALL_DYN_LINK           OFF)   # force dynamic linking for all libraries
-	else()
-	    set(Boost_USE_STATIC_LIBS        OFF)
-	    set(Boost_USE_STATIC_RUNTIME     OFF)
-	    set(BOOST_ALL_DYN_LINK           ON)   # force dynamic linking for all libraries
-	endif()
-
-    add_definitions( /D_USE_MATH_DEFINES /DBOOST_ALL_NO_LIB /DBOOST_ALL_DYN_LINK /DWIN32_LEAN_AND_MEAN /DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00)
-
+    add_definitions( /D_USE_MATH_DEFINES /DWIN32_LEAN_AND_MEAN /DWINVER=0x0A00 /D_WIN32_WINNT=0x0A00)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -Wall -Wextra -pedantic")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -fPIC -Wall -Wextra -pedantic")
 endif()
+
+find_package(Boost    REQUIRED  COMPONENTS filesystem system program_options date_time)
+find_package(LibLZMA  REQUIRED)
+find_package(Git      REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
