@@ -27,6 +27,9 @@
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/topology.hpp"
 
+#include <map>
+#include <utility>  // std::pair, std::make_pair
+
 using namespace std;
 
 namespace statchem {
@@ -377,49 +380,15 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
     std::set<int> used_atom_types;
 
-    std::map<int, int> __idatm_to_internal;
-    std::map<int, int> __internal_to_idatm;
-    vector<double> __idatm_types;
-
     int num_types = 0;
+    int position = 0;
+    multimap<int, int> idatm_mapping;
+
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
-        if (!__idatm_to_internal.count(atom->idatm_type())) {
-            __idatm_to_internal[atom->idatm_type()] = num_types;
-            __internal_to_idatm[num_types] = atom->idatm_type();
-            num_types++;
-        }
-
-        __idatm_types.push_back(
-            static_cast<double>(__idatm_to_internal[atom->idatm_type()]));
+        idatm_mapping.insert(pair<int, int>(atom->idatm_type(), position++));
     }
 
-    vector<double> table;
-    size_t xsize = 0, ysize = 0;
-
-    for (size_t i = 0; i < __idatm_to_internal.size(); i++) {
-        for (size_t j = 0; j < __idatm_to_internal.size(); j++) {
-            try {
-                const ForceField::KBType kb = __ffield->get_kb_force_type(
-                    __internal_to_idatm[i], __internal_to_idatm[j]);
-
-                if (ysize == 0) ysize = kb.potential.size();
-
-                if (ysize != kb.potential.size())
-                    throw Error("mismatching potential size");
-
-                xsize++;
-
-                for (size_t i = 0; i < kb.potential.size(); i++)
-                    table.push_back(kb.potential[i] * scale);
-            } catch (ParameterError& e) {
-                cerr << e.what() << endl;
-                cerr << "This is normal for atom types only present in the "
-                        "ligand"
-                     << endl;
-            }
-        }
-    }
     try {
         vector<pair<int, int>> bondPairs;
 
@@ -431,25 +400,47 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
-        vector<OpenMM::CustomNonbondedForce*> forces;
+        for (auto idatm1 = used_atom_types.begin();
+             idatm1 != used_atom_types.end(); idatm1++) {
+            auto idatm2 = idatm1;
+            for (; idatm2 != used_atom_types.end(); idatm2++) {
+                // Create new CustomNonbondedForce 
+                auto forcefield =
+                    new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
 
-        for (size_t i = 0; i < __idatm_to_internal.size(); i++) {
-            // Create new CustomNonbondedForce
-            forces.push_back(new OpenMM::CustomNonbondedForce("kbpot(r)"));
+                forcefield->setNonbondedMethod(
+                    OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
+                forcefield->setCutoffDistance(__ffield->kb_cutoff);
 
-            forcefield->setNonbondedMethod(
-                OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
-            forcefield->setCutoffDistance(__ffield->kb_cutoff);
+                forcefield->addGlobalParameter("scale", scale);
 
-            for (auto& x : __idatm_types) forcefield->addParticle({x});
+                // Cutoff / 10
+                forcefield->addTabulatedFunction(
+                    "kbpot", new OpenMM::Continuous1DFunction(
+                                 __ffield->kb_force_type.at(*idatm1)
+                                     .at(*idatm2)
+                                     .potential,
+                                 0, __ffield->kb_cutoff / 10));
 
-            // Cutoff * stepsize / 10
-            forcefield->addTabulatedFunction(
-                "kbpot", new OpenMM::Continuous1DFunction(table, 0, 0.6));
+                set<int> one, two;
+                auto type_1_iter = idatm_mapping.find(*idatm1);
+                auto type_2_iter = idatm_mapping.find(*idatm2);
 
-            forcefield->createExclusionsFromBonds(bondPairs, 4);
+                for (; type_1_iter != idatm_mapping.end(); ++type_1_iter)
+                    one.insert(type_1_iter->second);
 
-            system->addForce(forces.at(i));
+                for (; type_2_iter != idatm_mapping.end(); ++type_2_iter)
+                    one.insert(type_2_iter->second);
+
+                forcefield->addInteractionGroup(one, two);
+
+                for (const auto& atom : topology.atoms)
+                    forcefield->addParticle(vector<double>());
+
+                forcefield->createExclusionsFromBonds(bondPairs, 4);
+
+                system->addForce(forcefield);
+            }
         }
 
         // forcefield->createExclusionsFromBonds(bondPairs, 4);
@@ -458,7 +449,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
         cerr << "Exiting" << endl;
         exit(0);
     }
-}
+}  // namespace OMMIface
 
 void SystemTopology::retype_amber_protein_atom_to_gaff(const molib::Atom& atom,
                                                        int& type) {
