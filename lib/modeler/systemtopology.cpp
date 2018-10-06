@@ -15,16 +15,15 @@
 #include <openmm/VerletIntegrator.h>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <regex>
+#include "statchem/fileio/inout.hpp"
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
 #include "statchem/helper/logger.hpp"
-#include "statchem/fileio/inout.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/topology.hpp"
 
@@ -36,7 +35,7 @@ namespace OMMIface {
 SystemTopology::~SystemTopology() {
     dbgmsg("calling destructor of SystemTopology");
     delete context;
-    //delete integrator;
+    // delete integrator;
     delete system;
 }
 
@@ -372,21 +371,16 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     }
 }
 
-void SystemTopology::init_knowledge_based_force(Topology& topology, double scale) {
+void SystemTopology::init_knowledge_based_force(Topology& topology,
+                                                double scale) {
     if (__kbforce_idx != -1) system->removeForce(__kbforce_idx);
 
     std::set<int> used_atom_types;
 
-    forcefield = new OpenMM::CustomNonbondedForce(
-        "kbpot( r / ffstep, idatm2 , idatm1); ");
-    forcefield->setNonbondedMethod(
-        OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
-    forcefield->setCutoffDistance(__ffield->kb_cutoff);
-    forcefield->addGlobalParameter("ffstep", __ffield->step);
-    forcefield->addPerParticleParameter("idatm");
-
     std::map<int, int> __idatm_to_internal;
     std::map<int, int> __internal_to_idatm;
+    vector<double> __idatm_types;
+
     int num_types = 0;
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
@@ -396,8 +390,8 @@ void SystemTopology::init_knowledge_based_force(Topology& topology, double scale
             num_types++;
         }
 
-        forcefield->addParticle(
-            {static_cast<double>(__idatm_to_internal[atom->idatm_type()])});
+        __idatm_types.push_back(
+            static_cast<double>(__idatm_to_internal[atom->idatm_type()]));
     }
 
     vector<double> table;
@@ -409,7 +403,6 @@ void SystemTopology::init_knowledge_based_force(Topology& topology, double scale
                 const ForceField::KBType kb = __ffield->get_kb_force_type(
                     __internal_to_idatm[i], __internal_to_idatm[j]);
 
-                // std::cerr << "size " << kb.potential.size() << std::endl;
                 if (ysize == 0) ysize = kb.potential.size();
 
                 if (ysize != kb.potential.size())
@@ -428,11 +421,6 @@ void SystemTopology::init_knowledge_based_force(Topology& topology, double scale
         }
     }
     try {
-        forcefield->addTabulatedFunction(
-            "kbpot",
-            new OpenMM::Discrete3DFunction(ysize, __idatm_to_internal.size(),
-                                           __idatm_to_internal.size(), table));
-
         vector<pair<int, int>> bondPairs;
 
         for (auto& bond : topology.bonds) {
@@ -443,14 +431,33 @@ void SystemTopology::init_knowledge_based_force(Topology& topology, double scale
             bondPairs.push_back({idx1, idx2});
         }
 
-        forcefield->createExclusionsFromBonds(bondPairs, 4);
+        vector<OpenMM::CustomNonbondedForce*> forces;
+
+        for (size_t i = 0; i < __idatm_to_internal.size(); i++) {
+            // Create new CustomNonbondedForce
+            forces.push_back(new OpenMM::CustomNonbondedForce("kbpot(r)"));
+
+            forcefield->setNonbondedMethod(
+                OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
+            forcefield->setCutoffDistance(__ffield->kb_cutoff);
+
+            for (auto& x : __idatm_types) forcefield->addParticle({x});
+
+            // Cutoff * stepsize / 10
+            forcefield->addTabulatedFunction(
+                "kbpot", new OpenMM::Continuous1DFunction(table, 0, 0.6));
+
+            forcefield->createExclusionsFromBonds(bondPairs, 4);
+
+            system->addForce(forces.at(i));
+        }
+
+        // forcefield->createExclusionsFromBonds(bondPairs, 4);
     } catch (ParameterError& e) {
         cerr << e.what() << endl;
         cerr << "Exiting" << endl;
         exit(0);
     }
-
-    __kbforce_idx = system->addForce(forcefield);
 }
 
 void SystemTopology::retype_amber_protein_atom_to_gaff(const molib::Atom& atom,
@@ -542,8 +549,9 @@ void SystemTopology::init_bonded(Topology& topology,
         try {
             btype = __ffield->get_bond_type(type1, type2);
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this bond)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this bond)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             btype = ForceField::BondType{atom1.get_bond(atom2).length(), 250000,
@@ -616,8 +624,9 @@ void SystemTopology::init_bonded(Topology& topology,
                                                              << atom3);
             atype = __ffield->get_angle_type(type1, type2, type3);
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this angle)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this angle)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             atype = ForceField::AngleType{
@@ -709,8 +718,9 @@ void SystemTopology::init_bonded(Topology& topology,
                 ++force_idx;
             }
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this dihedral)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this dihedral)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             // cout <<  geometry::dihedral(atom1.crd(), atom2.crd(),
@@ -827,15 +837,14 @@ void SystemTopology::init_positions(const geometry::Point::Vec& crds) {
 }
 
 geometry::Point::Vec SystemTopology::get_positions_in_nm() {
-    auto positions_in_nm = context->getState(OpenMM::State::Positions).getPositions();
+    auto positions_in_nm =
+        context->getState(OpenMM::State::Positions).getPositions();
     geometry::Point::Vec result;
     result.reserve(positions_in_nm.size());
     for (size_t i = 0; i < positions_in_nm.size(); ++i) {
-        result.emplace_back(
-            geometry::Point(positions_in_nm[i][0],
-                            positions_in_nm[i][1],
-                            positions_in_nm[i][2])
-        );
+        result.emplace_back(geometry::Point(positions_in_nm[i][0],
+                                            positions_in_nm[i][1],
+                                            positions_in_nm[i][2]));
     }
 
     return result;
@@ -846,11 +855,8 @@ geometry::Point::Vec SystemTopology::get_forces() {
     geometry::Point::Vec result;
     result.reserve(forces_in_nm.size());
     for (size_t i = 0; i < forces_in_nm.size(); ++i) {
-        result.emplace_back(
-            geometry::Point(forces_in_nm[i][0],
-                            forces_in_nm[i][1],
-                            forces_in_nm[i][2])
-        );
+        result.emplace_back(geometry::Point(
+            forces_in_nm[i][0], forces_in_nm[i][1], forces_in_nm[i][2]));
     }
 
     return result;
@@ -874,5 +880,5 @@ void SystemTopology::dynamics(const int steps) {
 
     integrator->step(steps);
 }
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem
