@@ -404,7 +404,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
              idatm1 != used_atom_types.end(); idatm1++) {
             auto idatm2 = idatm1;
             for (; idatm2 != used_atom_types.end(); idatm2++) {
-                // Create new CustomNonbondedForce 
+                // Create new CustomNonbondedForce
                 auto forcefield =
                     new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
 
@@ -415,12 +415,13 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                 forcefield->addGlobalParameter("scale", scale);
 
                 // Cutoff / 10
+                // Replace cutoff with 1.5
                 forcefield->addTabulatedFunction(
                     "kbpot", new OpenMM::Continuous1DFunction(
                                  __ffield->kb_force_type.at(*idatm1)
                                      .at(*idatm2)
                                      .potential,
-                                 0, __ffield->kb_cutoff / 10));
+                                 0, 1.5));
 
                 set<int> one, two;
                 auto type_1_iter = idatm_mapping.find(*idatm1);
