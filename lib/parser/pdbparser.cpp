@@ -474,8 +474,12 @@ void FileParser::PdbParser::parse_molecule(Molecules& mols) {
                 auto& bond = a1.connect(a2);
                 bond.set_bo(stoi(vs[0]));
                 bond.set_bond_gaff_type(vs[1]);
-                // if(vs.size() >= 5)
-                // bond.set_stereo(vs[4]);
+            } else if (vs.size() == 3) {
+                Model& model = mols.last().last().last();
+                Atom& a1 = *atom_number_to_atom[&model][stoi(vs[1])];
+                Atom& a2 = *atom_number_to_atom[&model][stoi(vs[2])];
+                auto& bond = a1.connect(a2);
+                bond.set_bo(1);
             }
         } else if (line.compare(0, 6, "CONECT") == 0) {
             const string ln = boost::algorithm::trim_right_copy(line.substr(6));

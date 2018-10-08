@@ -34,5 +34,10 @@ int main(int argc, char** argv) {
         return 2;
     }
 
+    size_t lig_bond_count = ligand_bond_count();
+    if (lig_bond_count != 41) {
+        return 3;
+    }
+
     return 0;
 }
