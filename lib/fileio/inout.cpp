@@ -13,7 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <regex>
 
-#ifndef _WINDOWS
+#ifndef _MSC_VER
 
 #include <sys/file.h> /* for flock(2) */
 #include <unistd.h>   /* for close(2) prototypes */
@@ -45,7 +45,7 @@ void __mkdir(const string& dir_path) {
     }
 }
 
-#ifndef _WINDOWS
+#ifndef _MSC_VER
 
 int __lock(const string& name) {
     int fd = open(name.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
@@ -100,21 +100,21 @@ void read_file(const string& name, vector<string>& s, streampos& pos_in_file,
         auto sss = std::stringstream(ss);
         read_stream(sss, s, pos_in_file, num_occur, pattern);
     }
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     int fd = __lock(name);
     ifstream in(name, ios::in);
 #else
     ifstream in(name, ios::in, _SH_DENYRW);
 #endif
     if (!in.is_open() && w == panic) {
-#ifndef _WINDOWS
+#ifndef _MSC_VER
         __unlock(fd);
 #endif
         throw Error("Cannot read " + name);
     }
     read_stream(in, s, pos_in_file, num_occur, pattern);
     in.close();
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     __unlock(fd);
 #endif
 }
@@ -165,21 +165,21 @@ void file_open_put_contents(const string& name, const vector<string>& v,
 void file_open_put_stream(const string& name, const stringstream& ss,
                           ios_base::openmode mode) {
     __mkdir(name);
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     int fd = __lock(name);
     ofstream output_file(name, mode);
 #else
     ofstream output_file(name, mode, _SH_DENYRW);
 #endif
     if (!output_file.is_open()) {
-#ifndef _WINDOWS
+#ifndef _MSC_VER
         __unlock(fd);
 #endif
         throw Error("Cannot open output file: " + name);  // how to emulate $! ?
     }
     output_file << ss.str();
     output_file.close();
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     __unlock(fd);
 #endif
 }

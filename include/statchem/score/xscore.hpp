@@ -2,6 +2,7 @@
 #define XSCORE_H
 
 #include <vector>
+#include <array>
 #include "statchem/molib/molecule.hpp"
 
 namespace statchem {

@@ -13,5 +13,10 @@ add_executable( stch
 )
 
 target_include_directories(stch PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(stch PUBLIC statchem pthread)
+
+if (MSVC)
+    target_link_libraries(stch PUBLIC statchem)
+else()
+    target_link_libraries(stch PUBLIC statchem pthread)
+endif()
 install(TARGETS stch DESTINATION bin)

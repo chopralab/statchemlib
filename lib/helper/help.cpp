@@ -22,7 +22,7 @@ const IdatmEntry& get_info_map(const string& name) {
 
 std::tuple<double, double, double> gnuplot(const double& x1, const double& x2,
                                            const string& datapoints) {
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     double coeffA = 0, coeffB = 0, WSSR = HUGE_VAL;
 
     // try a range of coefficients to get the best fit
@@ -82,7 +82,7 @@ std::tuple<double, double, double> gnuplot(const double& x1, const double& x2,
 }
 
 string memusage(const string& msg) {
-#ifndef _WINDOWS
+#ifndef _MSC_VER
     const string cmd =
         "ps ax -o rss,command | sort -nr | head -n 10|grep test_link|cut -f1 "
         "-d' '";

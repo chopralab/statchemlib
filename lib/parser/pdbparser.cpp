@@ -7,6 +7,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/filesystem.hpp>
 #include <regex>
+#include <cctype>
 
 using namespace std;
 using namespace statchem::molib;
