@@ -71,10 +71,16 @@ size_t write_complex(const char* filename) {
     }
 
     try {
+
+        double score = 0;
+        if (__score != nullptr) {
+            score =  calculate_score();
+        }
+
         // output docked molecule conformations
         std::stringstream ss;
         fileio::print_complex_pdb(
-            ss, (*__ligand)[0], (*__receptor)[0], 0.0);
+            ss, (*__ligand)[0], (*__receptor)[0], score);
         fileio::output_file(ss.str(), filename);
 
         return 1;
@@ -413,7 +419,7 @@ size_t ligand_get_neighbors(size_t atom_idx, size_t* neighbors) {
 }
 
 size_t initialize_scoring(const char* obj_dir) {
-    return initialize_scoring_full(obj_dir, "radial", "mean", "complete", 15.0,
+    return initialize_scoring_full(obj_dir, "radial", "mean", "reduced", 6.0,
                                    0.01, 10.0);
 }
 
@@ -515,6 +521,11 @@ size_t initialize_modeler(const char* platform, const char* precision,
 }
 
 float calculate_score() {
+    if (__score == nullptr) {
+        __error_string = std::string("You must run initialize_score first");
+        return 0;
+    }
+
     try {
         return __score->non_bonded_energy(*__gridrec, (*__ligand)[0]);
     } catch (std::exception& e) {
@@ -614,7 +625,8 @@ size_t remove_ligand_bond(size_t atom1, size_t atom2) {
     auto& atom2_obj = residue.atom(atom2);
 
     atom1_obj.erase_bond(atom2_obj);
-    return (!atom1_obj.is_adjacent(atom2_obj));
+    atom2_obj.erase_bond(atom1_obj);
+    return (!atom1_obj.is_adjacent(atom2_obj) && !atom2_obj.is_adjacent(atom1_obj));
 }
 
 size_t minimize_complex(size_t max_iter) {

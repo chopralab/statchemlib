@@ -20,9 +20,17 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    if (ligand_bond_count() != 41) {
+        return 2;
+    }
+
     // Change the connectivity
     if (!remove_ligand_bond(1519, 1520)) {
         return 1;
+    }
+
+    if (ligand_bond_count() != 40) {
+        return 3;
     }
 
     if (!add_ligand_bond(1519, 1521)) {

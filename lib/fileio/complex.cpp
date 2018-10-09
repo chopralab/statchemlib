@@ -49,8 +49,7 @@ void print_complex_pdb(std::ostream& ss, const molib::Molecule& ligand,
         }
     }
 
-    ss << "TER"
-       << "\n";
+    ss << "TER   " << std::setw(5) << std::right << ++reenum << "\n";
 
     for (auto& patom : ligand.get_atoms()) {
         patom->set_atom_number(++reenum);
