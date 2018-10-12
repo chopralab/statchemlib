@@ -334,6 +334,21 @@ size_t ligand_atom_details(char* chain_ids, size_t* resi, size_t* rest,
     }
 }
 
+size_t ligand_ligand_atoms() {
+    if (__ligand == nullptr) {
+        __error_string = std::string("You must run initialize_ligand first");
+        return 0;
+	}
+
+	auto all_atoms = __ligand->get_atoms();
+    for (auto atom : all_atoms) {
+        atom->set_idatm_type("???");
+	}
+
+	__ligand->compute_idatm_type();
+    return 1;
+}
+
 size_t ligand_bond_count() {
     if (__ligand == nullptr) {
         __error_string = std::string("You must run initialize_ligand first");
@@ -419,7 +434,7 @@ size_t ligand_get_neighbors(size_t atom_idx, size_t* neighbors) {
 }
 
 size_t initialize_scoring(const char* obj_dir) {
-    return initialize_scoring_full(obj_dir, "radial", "mean", "reduced", 6.0,
+    return initialize_scoring_full(obj_dir, "radial", "mean", "complete", 15.0,
                                    0.01, 10.0);
 }
 

@@ -44,6 +44,8 @@ STATCHEM_EXPORT size_t ligand_atoms(size_t* idx, float* pos);
 STATCHEM_EXPORT size_t ligand_atom_details(char* chain_ids, size_t* resi,
                                           size_t* rest, size_t* elements);
 
+STATCHEM_EXPORT size_t ligand_ligand_atoms();
+
 STATCHEM_EXPORT size_t ligand_bond_count();
 STATCHEM_EXPORT size_t ligand_bonds(size_t* bonds);
 STATCHEM_EXPORT size_t ligand_get_neighbors(size_t atom_idx, size_t* neighbors);
