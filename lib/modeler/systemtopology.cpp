@@ -864,13 +864,27 @@ void SystemTopology::minimize(const double tolerance,
              << " iterations with a tolerence of " << tolerance << " "
              << __kbforce_idx << "\n";
     OpenMM::LocalEnergyMinimizer::minimize(*context, tolerance, max_iterations);
+
+    context->setVelocitiesToTemperature(300);
 }
 
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
 
-    integrator->step(steps);
+    integrator->step(steps / 1000);
+    /*
+    cerr << "Potential energies "
+         << context->getState(OpenMM::State::Energy).getPotentialEnergy()
+         << endl;
+    cerr << "Kinetic energies "
+         << context->getState(OpenMM::State::Energy).getKineticEnergy() << endl;
+    */
+
+    cerr << "Total energies "
+         << context->getState(OpenMM::State::Energy).getPotentialEnergy() +
+                context->getState(OpenMM::State::Energy).getKineticEnergy()
+         << endl;
 }
 }  // namespace OMMIface
 }  // namespace statchem

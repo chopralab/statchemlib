@@ -42,8 +42,8 @@ bool KBDynamics::process_options(int argc, char* argv[]) {
     ff_min.add_options()("distance_cutoff",
                          po::value<double>(&__dist_cut)->default_value(6.0),
                          "Distance cutoff for intermolecular forces.")(
-                         "scale", po::value<double>(&__scale)->default_value(1.0),
-                         "Scale factor for the knowledge-based force.");
+        "scale", po::value<double>(&__scale)->default_value(1.0),
+        "Scale factor for the knowledge-based force.");
 
     auto dynamics_options = po::options_description("Dynamics Opetions");
     dynamics_options.add_options()(
@@ -172,19 +172,23 @@ int KBDynamics::run() {
 
         modeler.init_openmm_positions();
 
-        modeler.dynamics();
+        modeler.minimize_state();
 
-        // init with minimized coordinates
-        statchem::molib::Molecule minimized_receptor(
-            protein, modeler.get_state(protein.get_atoms()));
-        statchem::molib::Molecule minimized_ligand(
-            ligand, modeler.get_state(ligand.get_atoms()));
+        for (int i = 0; i < 500000; i += 500) {
+            std::cerr << i << " ";
+            modeler.dynamics();
 
-        minimized_receptor.undo_mm_specific();
+            // init with minimized coordinates
+            statchem::molib::Molecule minimized_receptor(
+                protein, modeler.get_state(protein.get_atoms()));
+            statchem::molib::Molecule minimized_ligand(
+                ligand, modeler.get_state(ligand.get_atoms()));
 
-        statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
-                                            minimized_receptor, 0.000);
+            minimized_receptor.undo_mm_specific();
 
+            statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
+                                                minimized_receptor, 0.000);
+        }
         __ffield.erase_topology(ligand);
     }
 
