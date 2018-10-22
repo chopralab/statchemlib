@@ -630,6 +630,58 @@ size_t add_ligand_bond(size_t atom1, size_t atom2) {
     auto& atom1_obj = residue.atom(atom1);
     auto& atom2_obj = residue.atom(atom2);
 
+    switch (atom1_obj.atom_number()) {
+        case 6:
+        case 7:
+            if (atom1_obj.size() >= 4) {
+                return 0;
+            }
+            break;
+        case 8:
+            if (atom1_obj.size() >= 2) {
+                return 0;
+            }
+            break;
+        case 9:
+        case 17:
+        case 35:
+        case 53:
+            if (atom1_obj.size() >= 1) {
+                return 0;
+            }
+            break;
+        default:
+            break;
+    }
+
+    switch (atom2_obj.atom_number()) {
+        case 6:
+        case 7:
+            if (atom2_obj.size() >= 4) {
+                return 0;
+            }
+            break;
+            if (atom2_obj.size() >= 4) {
+                return 0;
+            }
+            break;
+        case 8:
+            if (atom2_obj.size() >= 2) {
+                return 0;
+            }
+            break;
+        case 9:
+        case 17:
+        case 35:
+        case 53:
+            if (atom2_obj.size() >= 1) {
+                return 0;
+            }
+            break;
+        default:
+            break;
+    }
+
     atom1_obj.connect(atom2_obj);
 
     return atom1_obj.is_adjacent(atom2_obj);
