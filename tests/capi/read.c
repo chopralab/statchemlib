@@ -38,7 +38,8 @@ int main(int argc, char** argv) {
     size_t* lresi = (size_t*)malloc(lig_atom_count * sizeof(size_t));
     size_t* lrest = (size_t*)malloc(lig_atom_count * sizeof(size_t));
     size_t* lelem = (size_t*)malloc(lig_atom_count * sizeof(size_t));
-    if (!ligand_atom_details(lchain, lresi, lrest, lelem)) {
+    int* ltype = (size_t*)malloc(lig_atom_count * sizeof(int));
+    if (!ligand_atom_details(lchain, lresi, lrest, lelem, ltype)) {
         printf("%s\n", cd_get_error());
         return 5;
     }
@@ -52,6 +53,7 @@ int main(int argc, char** argv) {
     free(lresi);
     free(lrest);
     free(lelem);
+    free(ltype);
 
     return 0;
 }

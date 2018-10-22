@@ -42,7 +42,8 @@ STATCHEM_EXPORT size_t initialize_ligand(const char* filename);
 STATCHEM_EXPORT size_t ligand_atom_count();
 STATCHEM_EXPORT size_t ligand_atoms(size_t* idx, float* pos);
 STATCHEM_EXPORT size_t ligand_atom_details(char* chain_ids, size_t* resi,
-                                          size_t* rest, size_t* elements);
+                                          size_t* rest, size_t* elements,
+                                          int* idatm);
 
 STATCHEM_EXPORT size_t ligand_ligand_atoms();
 

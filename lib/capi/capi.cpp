@@ -311,7 +311,7 @@ size_t ligand_atoms(size_t* idx, float* pos) {
 }
 
 size_t ligand_atom_details(char* chain_ids, size_t* resi, size_t* rest,
-                           size_t* elements) {
+                           size_t* elements, int* idatm) {
     if (__ligand == nullptr) {
         __error_string = std::string("You must run initialize_ligand first");
         return 0;
@@ -324,6 +324,7 @@ size_t ligand_atom_details(char* chain_ids, size_t* resi, size_t* rest,
             resi[i] = atoms[i]->br().resi();
             rest[i] = atoms[i]->br().rest();
             elements[i] = atoms[i]->element().number();
+            idatm[i] = atoms[i]->idatm_type();
         }
 
         return atoms.size();
@@ -341,6 +342,7 @@ size_t ligand_ligand_atoms() {
 	}
 
 	auto all_atoms = __ligand->get_atoms();
+    __ligand->erase_properties();
     for (auto atom : all_atoms) {
         atom->set_idatm_type("???");
 	}
@@ -619,7 +621,7 @@ size_t is_adjacent(size_t atom1, size_t atom2) {
     auto& atom1_obj = residue.atom(atom1);
     auto& atom2_obj = residue.atom(atom2);
 
-    return atom1_obj.is_adjacent(atom2_obj);
+    return atom1_obj.is_adjacent(atom2_obj) || atom2_obj.is_adjacent(atom1_obj);
 }
 
 size_t add_ligand_bond(size_t atom1, size_t atom2) {
@@ -641,6 +643,30 @@ size_t remove_ligand_bond(size_t atom1, size_t atom2) {
 
     atom1_obj.erase_bond(atom2_obj);
     atom2_obj.erase_bond(atom1_obj);
+
+    size_t atom_to_remove = -1;
+    for (size_t i = 0; i < atom1_obj.size(); ++i) {
+        if (atom2_obj.atom_number() == atom1_obj[i].atom_number()) {
+            atom_to_remove = i;
+            break;
+        }
+    }
+
+    if (atom_to_remove == (size_t)-1) {
+        return 0;
+    }
+
+    atom1_obj.erase(atom_to_remove);
+
+    for (size_t i = 0; i < atom2_obj.size(); ++i) {
+        if (atom1_obj.atom_number() == atom2_obj[i].atom_number()) {
+            atom_to_remove = i;
+            break;
+        }
+    }
+
+    atom2_obj.erase(atom_to_remove);
+
     return (!atom1_obj.is_adjacent(atom2_obj) && !atom2_obj.is_adjacent(atom1_obj));
 }
 
