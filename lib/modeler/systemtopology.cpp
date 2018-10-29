@@ -439,6 +439,8 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                     forcefield->addParticle(vector<double>());
 
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
+		forcefield->setNonbondedMethod(OpenMM::CustomNonbondedForce::CutoffPeriodic);
+		std::cerr << "using pbc " <<  forcefield->usesPeriodicBoundaryConditions() << std::endl;
 
                 __kbforce_idx = system->addForce(forcefield);
             }
