@@ -223,8 +223,8 @@ void compute_idatm_type(const Atom::Vec& atoms) {
                     if (a.element() == 1) {
                         idatm_type = "H";
                         for (auto& bond : a.get_bonds()) {
-                            if (bond->atom1->element() == 6 ||
-                                bond->atom2->element() == 6) {
+                            if (bond->atom1().element() == 6 ||
+                                bond->atom2().element() == 6) {
                                 idatm_type = "HC";
                                 break;
                             }
