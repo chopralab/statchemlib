@@ -210,17 +210,9 @@ void compute_idatm_type(const Atom::Vec& atoms) {
                 if (!mapped[&a]) {
                     string idatm_type = "???";
 
-                    // is it the N-terminal residue ?
-                    if (residue.rest() == Residue::protein &&
-                        &residue == &chain.first()) {
-                        if (a.atom_name() == "N")
-                            idatm_type = "N3+";
-                        else if (a.element() == 1)
-                            idatm_type = "H";
-                    }
-
                     // Check for H-C Bond
                     if (a.element() == 1) {
+                        mapped[&a] = true;
                         idatm_type = "H";
                         for (auto& bond : a.get_bonds()) {
                             if (bond->atom1().element() == 6 ||
@@ -229,6 +221,13 @@ void compute_idatm_type(const Atom::Vec& atoms) {
                                 break;
                             }
                         }
+                        continue;
+                    }
+
+                    // is it the N-terminal residue ?
+                    if (residue.rest() == Residue::protein &&
+                        &residue == &chain.first()) {
+                        if (a.atom_name() == "N") idatm_type = "N3+";
                     }
 
                     // is it C-terminal ?

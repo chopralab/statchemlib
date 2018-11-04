@@ -174,7 +174,8 @@ int KBDynamics::run() {
 
         modeler.minimize_state();
 
-        for (int i = 0; i < 500000; i += 500) {
+        // 1 billion
+        for (int i = 0; i < 1000000000; i += 1000000) {
             std::cerr << i << " ";
             modeler.dynamics();
 

@@ -27,10 +27,12 @@
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/topology.hpp"
 
+#include <chrono>
 #include <map>
 #include <utility>  // std::pair, std::make_pair
 
 using namespace std;
+using namespace std::chrono;
 
 namespace statchem {
 namespace OMMIface {
@@ -240,6 +242,7 @@ void SystemTopology::init_platform(const std::string& platform,
 
     if (platform == "CUDA") {
         properties["CudaPrecision"] = precision;
+        std::cerr << "gpus " << accelerators << std::endl;
         properties["CudaDeviceIndex"] = accelerators;
     } else if (platform == "OpenCL") {
         properties["OpenCLPrecision"] = precision;
@@ -400,6 +403,10 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
+        system->setDefaultPeriodicBoxVectors({5, 0, 0}, {0, 5, 0}, {0, 0, 5});
+        std::cerr << "system using pbc "
+                  << system->usesPeriodicBoundaryConditions() << std::endl;
+
         for (auto idatm1 = used_atom_types.begin();
              idatm1 != used_atom_types.end(); idatm1++) {
             auto idatm2 = idatm1;
@@ -439,8 +446,11 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                     forcefield->addParticle(vector<double>());
 
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
-		forcefield->setNonbondedMethod(OpenMM::CustomNonbondedForce::CutoffPeriodic);
-		std::cerr << "using pbc " <<  forcefield->usesPeriodicBoundaryConditions() << std::endl;
+                forcefield->setNonbondedMethod(
+                    OpenMM::CustomNonbondedForce::CutoffPeriodic);
+                std::cerr << "using pbc "
+                          << forcefield->usesPeriodicBoundaryConditions()
+                          << std::endl;
 
                 __kbforce_idx = system->addForce(forcefield);
             }
@@ -502,7 +512,10 @@ void SystemTopology::init_bonded(Topology& topology,
     system->addForce(bondBend);
     system->addForce(bondTorsion);
 
-    cerr << "bonded terms using pbc: bondBend" << bondBend->usesPeriodicBoundaryConditions() << " bondStretch " << bondStretch->usesPeriodicBoundaryConditions() << "  bondTorsion " << bondTorsion->usesPeriodicBoundaryConditions() << endl;
+    cerr << "bonded terms using pbc: bondBend"
+         << bondBend->usesPeriodicBoundaryConditions() << " bondStretch "
+         << bondStretch->usesPeriodicBoundaryConditions() << "  bondTorsion "
+         << bondTorsion->usesPeriodicBoundaryConditions() << endl;
 
     dbgmsg("initializing openmm");
 
@@ -878,8 +891,13 @@ void SystemTopology::minimize(const double tolerance,
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
-
+    // Get starting timepoint
+    auto start = high_resolution_clock::now();
     integrator->step(steps / 1000);
+    // Get ending timepoint
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(stop - start);
+    cerr << " Time taken by function: " << duration.count() << " seconds    ";
     /*
     cerr << "Potential energies "
          << context->getState(OpenMM::State::Energy).getPotentialEnergy()
