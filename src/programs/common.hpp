@@ -64,14 +64,14 @@ inline bool process_starting_inputs(po::variables_map& vm,
     } else {
         auto receptor = vm["receptor"].as<std::string>();
         statchem::parser::FileParser rpdb(
-            receptor, statchem::parser::pdb_read_options::all_models | 
-            statchem::parser::pdb_read_options::hydrogens);
+            receptor, statchem::parser::pdb_read_options::all_models |
+                          statchem::parser::pdb_read_options::hydrogens);
         rpdb.parse_molecule(rec_mols);
 
         auto ligand = vm["ligand"].as<std::string>();
         statchem::parser::FileParser lpdb(
             ligand, statchem::parser::pdb_read_options::all_models |
-            statchem::parser::pdb_read_options::hydrogens);
+                        statchem::parser::pdb_read_options::hydrogens);
         lpdb.parse_molecule(lig_mols);
 
         if (rec_mols.size() == 1) {
@@ -127,10 +127,10 @@ inline po::options_description openmm_options() {
     openmm.add_options()(
         "platform", po::value<std::string>()->default_value("CPU"),
         "Platform to run KBForce on. Options are CPU, GPU, and OpenCL.")(
-        "precision", po::value<std::string>()->default_value("double"),
+        "precision", po::value<std::string>()->default_value("single"),
         "Precision to run KBForce on. Options are single, mixed, double. "
         "Only works using CUDA or OpenCL platform")(
-        "accelerators", po::value<std::string>()->default_value("double"),
+        "accelerators", po::value<std::string>()->default_value("0"),
         "Precision to run KBForce on. Options are single, mixed, double. "
         "Only works using CUDA or OpenCL platform");
 
