@@ -157,9 +157,7 @@ int PhysDynamics::run() {
                                             minimized_receptor, 0.000);
         minimized_receptor.prepare_for_mm(__ffield, gridrec);
 
-       
-
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 100; i++) {
             modeler.dynamics();
 
             // init with minimized coordinates

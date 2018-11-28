@@ -331,8 +331,8 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     int warn = 0;
 
     OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce();
-    nonbond->setNonbondedMethod(
-        OpenMM::NonbondedForce::NonbondedMethod::CutoffPeriodic);
+    nonbond->setNonbondedMethod(OpenMM::NonbondedForce::NonbondedMethod::PME);
+    nonbond->setCutoffDistance(2.9);
     system->addForce(nonbond);
     system->setDefaultPeriodicBoxVectors(
         OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
@@ -907,7 +907,7 @@ void SystemTopology::dynamics(const int steps) {
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
     // Get starting timepoint
     auto start = high_resolution_clock::now();
-    integrator->step(500);
+    integrator->step(1000);
     // Get ending timepoint
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
