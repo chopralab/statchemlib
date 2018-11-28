@@ -175,7 +175,7 @@ int KBDynamics::run() {
         modeler.minimize_state();
 
         // 1 billion
-        for (int i = 0; i < 1000000000; i += 1000000) {
+        for (int i = 0; i < 10000000; i += 100000) {
             std::cerr << i << " ";
             modeler.dynamics();
 
@@ -189,6 +189,8 @@ int KBDynamics::run() {
 
             statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
                                                 minimized_receptor, 0.000);
+
+            minimized_receptor.prepare_for_mm(__ffield, gridrec);
         }
         __ffield.erase_topology(ligand);
     }

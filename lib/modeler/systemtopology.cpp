@@ -12,6 +12,7 @@
 #include <openmm/PeriodicTorsionForce.h>
 #include <openmm/Platform.h>
 #include <openmm/Units.h>
+#include <openmm/Vec3.h>
 #include <openmm/VerletIntegrator.h>
 
 #include <boost/algorithm/string.hpp>
@@ -212,6 +213,7 @@ void SystemTopology::init_integrator(SystemTopology::integrator_type type,
                                      const double temperature_in_kelvin,
                                      const double friction_in_per_ps) {
     if (integrator != nullptr) throw Error("Integrator already initialized");
+    std::cerr << "type used " << type << std::endl;
 
     __integrator_used = type;
 
@@ -329,7 +331,13 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     int warn = 0;
 
     OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce();
+    nonbond->setNonbondedMethod(
+        OpenMM::NonbondedForce::NonbondedMethod::CutoffPeriodic);
     system->addForce(nonbond);
+    system->setDefaultPeriodicBoxVectors(
+        OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
+    std::cerr << "system using pbc " << system->usesPeriodicBoundaryConditions()
+              << std::endl;
 
     for (auto& patom : topology.atoms) {
         const molib::Atom& atom = *patom;
@@ -403,7 +411,9 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
-        system->setDefaultPeriodicBoxVectors({5, 0, 0}, {0, 5, 0}, {0, 0, 5});
+        system->setDefaultPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0),
+                                             OpenMM::Vec3(0, 6, 0),
+                                             OpenMM::Vec3(0, 0, 6));
         std::cerr << "system using pbc "
                   << system->usesPeriodicBoundaryConditions() << std::endl;
 
@@ -502,11 +512,11 @@ void SystemTopology::init_bonded(Topology& topology,
     bondTorsionData.resize(topology.atoms.size());
 
     bondStretch = new OpenMM::HarmonicBondForce();
-    bondStretch->setUsesPeriodicBoundaryConditions(true);
+    // bondStretch->setUsesPeriodicBoundaryConditions(true);
     bondBend = new OpenMM::HarmonicAngleForce();
-    bondBend->setUsesPeriodicBoundaryConditions(true);
+    // bondBend->setUsesPeriodicBoundaryConditions(true);
     bondTorsion = new OpenMM::PeriodicTorsionForce();
-    bondTorsion->setUsesPeriodicBoundaryConditions(true);
+    // bondTorsion->setUsesPeriodicBoundaryConditions(true);
 
     system->addForce(bondStretch);
     system->addForce(bondBend);
@@ -889,11 +899,15 @@ void SystemTopology::minimize(const double tolerance,
 }
 
 void SystemTopology::dynamics(const int steps) {
+    std::cerr << "setting perdidic box vectors" << std::endl;
+    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
+                                   OpenMM::Vec3(0, 0, 6));
+
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
     // Get starting timepoint
     auto start = high_resolution_clock::now();
-    integrator->step(steps / 1000);
+    integrator->step(500);
     // Get ending timepoint
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
@@ -910,6 +924,12 @@ void SystemTopology::dynamics(const int steps) {
          << context->getState(OpenMM::State::Energy).getPotentialEnergy() +
                 context->getState(OpenMM::State::Energy).getKineticEnergy()
          << endl;
+
+    OpenMM::Vec3 a, b, c;
+    system->getDefaultPeriodicBoxVectors(a, b, c);
+    std::cerr << "a " << a[0] << " " << a[1] << " " << a[2] << std::endl;
+    std::cerr << "b " << b[0] << " " << b[1] << " " << b[2] << std::endl;
+    std::cerr << "c " << c[0] << " " << c[1] << " " << c[2] << std::endl;
 }
 }  // namespace OMMIface
 }  // namespace statchem

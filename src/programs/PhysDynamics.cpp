@@ -145,18 +145,33 @@ int PhysDynamics::run() {
 
         modeler.init_openmm_positions();
 
-        modeler.dynamics();
+        modeler.minimize_state();
 
         // init with minimized coordinates
         statchem::molib::Molecule minimized_receptor(
             protein, modeler.get_state(protein.get_atoms()));
         statchem::molib::Molecule minimized_ligand(
             ligand, modeler.get_state(ligand.get_atoms()));
-
         minimized_receptor.undo_mm_specific();
-
         statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
                                             minimized_receptor, 0.000);
+        minimized_receptor.prepare_for_mm(__ffield, gridrec);
+
+       
+
+        for (int i = 0; i < 1; i++) {
+            modeler.dynamics();
+
+            // init with minimized coordinates
+            statchem::molib::Molecule minimized_receptor(
+                protein, modeler.get_state(protein.get_atoms()));
+            statchem::molib::Molecule minimized_ligand(
+                ligand, modeler.get_state(ligand.get_atoms()));
+            minimized_receptor.undo_mm_specific();
+            statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
+                                                minimized_receptor, 0.000);
+            minimized_receptor.prepare_for_mm(__ffield, gridrec);
+        }
 
         __ffield.erase_topology(ligand);
     }
