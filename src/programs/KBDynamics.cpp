@@ -139,7 +139,7 @@ int KBDynamics::run() {
     __ffield.add_kb_forcefield(*__score, __dist_cut);
 
     statchem::OMMIface::SystemTopology::loadPlugins();
-
+    //__ligand_mols.size()
     for (size_t i = 0; i < __ligand_mols.size(); ++i) {
         statchem::molib::Molecule& protein =
             __constant_receptor ? __receptor_mols[0] : __receptor_mols[i];
@@ -175,7 +175,7 @@ int KBDynamics::run() {
         modeler.minimize_state();
 
         // 1 billion
-        for (int i = 0; i < 10000000; i += 100000) {
+        for (int i = 0; i < 10000; i++) {
             std::cerr << i << " ";
             modeler.dynamics();
 

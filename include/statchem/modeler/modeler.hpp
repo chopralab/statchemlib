@@ -38,11 +38,12 @@ class Modeler {
 
     geometry::Point::Vec __positions;
     Topology __topology;
-    SystemTopology __system_topology;
 
     int __dynamics_steps;
 
    public:
+    SystemTopology __system_topology;
+
     Modeler(const ForceField& ffield, const std::string& fftype = "none",
             double scale = 1.0, double tolerance = 0.0001,
             int max_iterations = 100, bool use_constraints = false,
@@ -86,7 +87,7 @@ class Modeler {
 
     const ForceField& get_forcefield() { return *__ffield; }
 };
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem
 
 #endif

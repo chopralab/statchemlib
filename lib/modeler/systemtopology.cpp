@@ -332,7 +332,7 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
 
     OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce();
     nonbond->setNonbondedMethod(OpenMM::NonbondedForce::NonbondedMethod::PME);
-    nonbond->setCutoffDistance(2.9);
+    nonbond->setCutoffDistance(2.99);
     system->addForce(nonbond);
     system->setDefaultPeriodicBoxVectors(
         OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
@@ -426,8 +426,9 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                     new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
 
                 forcefield->setNonbondedMethod(
-                    OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
-                forcefield->setCutoffDistance(__ffield->kb_cutoff);
+                    OpenMM::CustomNonbondedForce::CutoffPeriodic);
+                // forcefield->setCutoffDistance(__ffield->kb_cutoff);
+                forcefield->setCutoffDistance(2.99);
 
                 forcefield->addGlobalParameter("scale", scale);
 
@@ -898,6 +899,11 @@ void SystemTopology::minimize(const double tolerance,
     context->setVelocitiesToTemperature(300);
 }
 
+double SystemTopology::get_energies() {
+    return context->getState(OpenMM::State::Energy).getPotentialEnergy() +
+           context->getState(OpenMM::State::Energy).getKineticEnergy();
+}
+
 void SystemTopology::dynamics(const int steps) {
     std::cerr << "setting perdidic box vectors" << std::endl;
     context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
@@ -920,10 +926,7 @@ void SystemTopology::dynamics(const int steps) {
          << context->getState(OpenMM::State::Energy).getKineticEnergy() << endl;
     */
 
-    cerr << "Total energies "
-         << context->getState(OpenMM::State::Energy).getPotentialEnergy() +
-                context->getState(OpenMM::State::Energy).getKineticEnergy()
-         << endl;
+    cerr << "Total energies " << get_energies() << endl;
 
     OpenMM::Vec3 a, b, c;
     system->getDefaultPeriodicBoxVectors(a, b, c);

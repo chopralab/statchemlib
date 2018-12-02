@@ -64,5 +64,5 @@ void print_complex_pdb(std::ostream& ss, const molib::Molecule& ligand,
     ss << "ENDMDL"
        << "\n";
 }
-}
-}
+}  // namespace fileio
+}  // namespace statchem

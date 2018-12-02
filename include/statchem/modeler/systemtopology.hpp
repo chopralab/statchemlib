@@ -17,14 +17,14 @@ class HarmonicAngleForce;
 class HarmonicBondForce;
 class PeriodicTorsionForce;
 class CustomNonbondedForce;
-}
+}  // namespace OpenMM
 
 namespace statchem {
 
 namespace molib {
 class Atom;
 class Molecule;
-}
+}  // namespace molib
 
 namespace OMMIface {
 struct ForceField;
@@ -124,9 +124,10 @@ class SystemTopology {
     double get_potential_energy();
     void minimize(const double tolerance, const int max_iterations);
     void dynamics(const int steps);
+    double get_energies();
     void set_forcefield(const ForceField& ffield) { __ffield = &ffield; }
 };
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem
 
 #endif
