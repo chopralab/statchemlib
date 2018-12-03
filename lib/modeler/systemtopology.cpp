@@ -243,12 +243,12 @@ void SystemTopology::init_platform(const std::string& platform,
     map<string, string> properties;
 
     if (platform == "CUDA") {
-        properties["CudaPrecision"] = precision;
+        properties["Precision"] = precision;
         std::cerr << "gpus " << accelerators << std::endl;
-        properties["CudaDeviceIndex"] = accelerators;
+        properties["DeviceIndex"] = accelerators;
     } else if (platform == "OpenCL") {
-        properties["OpenCLPrecision"] = precision;
-        properties["OpenCLDeviceIndex"] = accelerators;
+        properties["Precision"] = precision;
+        properties["DeviceIndex"] = accelerators;
     }
 
     // Reference, CPU, CUDA, and OpenCL
@@ -913,7 +913,7 @@ void SystemTopology::dynamics(const int steps) {
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
     // Get starting timepoint
     auto start = high_resolution_clock::now();
-    integrator->step(1000);
+    integrator->step(1000000);
     // Get ending timepoint
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
