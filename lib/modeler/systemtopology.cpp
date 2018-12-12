@@ -391,7 +391,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
     std::set<int> used_atom_types;
 
-    int num_types = 0;
+    //int num_types = 0;
     int position = 0;
     multimap<int, int> idatm_mapping;
 
@@ -860,8 +860,9 @@ void SystemTopology::init_positions(const geometry::Point::Vec& crds) {
 }
 
 geometry::Point::Vec SystemTopology::get_positions_in_nm() {
+    //The true parameter is to enforce Periodic Boundary Conditions
     auto positions_in_nm =
-        context->getState(OpenMM::State::Positions).getPositions();
+        context->getState(OpenMM::State::Positions, true).getPositions();
     geometry::Point::Vec result;
     result.reserve(positions_in_nm.size());
     for (size_t i = 0; i < positions_in_nm.size(); ++i) {
@@ -874,7 +875,7 @@ geometry::Point::Vec SystemTopology::get_positions_in_nm() {
 }
 
 geometry::Point::Vec SystemTopology::get_forces() {
-    auto forces_in_nm = context->getState(OpenMM::State::Forces).getForces();
+    auto forces_in_nm = context->getState(OpenMM::State::Forces, true).getForces();
     geometry::Point::Vec result;
     result.reserve(forces_in_nm.size());
     for (size_t i = 0; i < forces_in_nm.size(); ++i) {
@@ -886,7 +887,19 @@ geometry::Point::Vec SystemTopology::get_forces() {
 }
 
 double SystemTopology::get_potential_energy() {
-    return context->getState(OpenMM::State::Energy).getPotentialEnergy();
+    return context->getState(OpenMM::State::Energy, true).getPotentialEnergy();
+}
+
+double SystemTopology::get_kinetic_energy() {
+    return context->getState(OpenMM::State::Energy, true).getKineticEnergy();
+}
+
+void SystemTopology::dump_box_vector() {
+    OpenMM::Vec3 x, y, z;
+    system->getDefaultPeriodicBoxVectors(x, y, z);
+    std::cerr << "x " << x[0] << " " << x[1] << " " << x[2] << std::endl;
+    std::cerr << "y " << y[0] << " " << y[1] << " " << y[2] << std::endl;
+    std::cerr << "z " << z[0] << " " << z[1] << " " << z[2] << std::endl;
 }
 
 void SystemTopology::minimize(const double tolerance,
@@ -900,39 +913,33 @@ void SystemTopology::minimize(const double tolerance,
 }
 
 double SystemTopology::get_energies() {
-    return context->getState(OpenMM::State::Energy).getPotentialEnergy() +
-           context->getState(OpenMM::State::Energy).getKineticEnergy();
+    return get_potential_energy() + get_kinetic_energy();
 }
 
 void SystemTopology::dynamics(const int steps) {
-    std::cerr << "setting perdidic box vectors" << std::endl;
+
+    //std::cerr << "setting perdidic box vectors" << std::endl;
+    //Make sure box vector size is set correctly
     context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
                                    OpenMM::Vec3(0, 0, 6));
 
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
+
     // Get starting timepoint
     auto start = high_resolution_clock::now();
-    integrator->step(1000000);
+
+    integrator->step(steps);
+
     // Get ending timepoint
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
     cerr << " Time taken by function: " << duration.count() << " seconds    ";
-    /*
-    cerr << "Potential energies "
-         << context->getState(OpenMM::State::Energy).getPotentialEnergy()
-         << endl;
-    cerr << "Kinetic energies "
-         << context->getState(OpenMM::State::Energy).getKineticEnergy() << endl;
-    */
 
     cerr << "Total energies " << get_energies() << endl;
 
-    OpenMM::Vec3 a, b, c;
-    system->getDefaultPeriodicBoxVectors(a, b, c);
-    std::cerr << "a " << a[0] << " " << a[1] << " " << a[2] << std::endl;
-    std::cerr << "b " << b[0] << " " << b[1] << " " << b[2] << std::endl;
-    std::cerr << "c " << c[0] << " " << c[1] << " " << c[2] << std::endl;
+    //dump_box_vector();
+
 }
 }  // namespace OMMIface
 }  // namespace statchem

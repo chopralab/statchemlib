@@ -122,6 +122,10 @@ class SystemTopology {
     geometry::Point::Vec get_positions_in_nm();
     geometry::Point::Vec get_forces();
     double get_potential_energy();
+    double get_kinetic_energy();
+    
+    void dump_box_vector();
+
     void minimize(const double tolerance, const int max_iterations);
     void dynamics(const int steps);
     double get_energies();
