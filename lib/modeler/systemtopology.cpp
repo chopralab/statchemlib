@@ -513,20 +513,12 @@ void SystemTopology::init_bonded(Topology& topology,
     bondTorsionData.resize(topology.atoms.size());
 
     bondStretch = new OpenMM::HarmonicBondForce();
-    // bondStretch->setUsesPeriodicBoundaryConditions(true);
     bondBend = new OpenMM::HarmonicAngleForce();
-    // bondBend->setUsesPeriodicBoundaryConditions(true);
     bondTorsion = new OpenMM::PeriodicTorsionForce();
-    // bondTorsion->setUsesPeriodicBoundaryConditions(true);
 
     system->addForce(bondStretch);
     system->addForce(bondBend);
     system->addForce(bondTorsion);
-
-    cerr << "bonded terms using pbc: bondBend"
-         << bondBend->usesPeriodicBoundaryConditions() << " bondStretch "
-         << bondStretch->usesPeriodicBoundaryConditions() << "  bondTorsion "
-         << bondTorsion->usesPeriodicBoundaryConditions() << endl;
 
     dbgmsg("initializing openmm");
 
