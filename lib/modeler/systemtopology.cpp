@@ -242,18 +242,13 @@ void SystemTopology::init_platform(const std::string& platform,
                                    const std::string& accelerators) {
     map<string, string> properties;
 
-    if (platform == "CUDA") {
-        properties["Precision"] = precision;
-        std::cerr << "gpus " << accelerators << std::endl;
-        properties["DeviceIndex"] = accelerators;
-    } else if (platform == "OpenCL") {
+    if (platform == "CUDA" || platform == "OpenCL") {
         properties["Precision"] = precision;
         properties["DeviceIndex"] = accelerators;
     }
 
-    // Reference, CPU, CUDA, and OpenCL
-    OpenMM::Platform& platform2 = OpenMM::Platform::getPlatformByName(platform);
-    context = new OpenMM::Context(*system, *integrator, platform2, properties);
+    //Available Platforms: Reference, CPU, CUDA, and OpenCL
+    context = new OpenMM::Context(*system, *integrator, OpenMM::Platform::getPlatformByName(platform), properties);
 
     dbgmsg("Using OpenMM platform " << context->getPlatform().getName());
 }
@@ -926,9 +921,10 @@ void SystemTopology::dynamics(const int steps) {
     // Get ending timepoint
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
-    cerr << " Time taken by function: " << duration.count() << " seconds    ";
-
-    cerr << "Total energies " << get_energies() << endl;
+    cerr << " Time taken by function: " << duration.count() << " seconds\n";
+    cerr << "Potential Eneriges: " << get_potential_energy();
+    cerr << "\tKinetic Energies: " << get_kinetic_energy();
+    cerr << "\tTotal Energies: " << get_energies() << endl;
 
     //dump_box_vector();
 
