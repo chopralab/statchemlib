@@ -123,8 +123,12 @@ class SystemTopology {
     geometry::Point::Vec get_forces();
     double get_potential_energy();
     double get_kinetic_energy();
+
+    void set_temperature();
+    void set_box_vector();
+    void print_energies();
     
-    void dump_box_vector();
+    void print_box_vector_size();
 
     void minimize(const double tolerance, const int max_iterations);
     void dynamics(const int steps);

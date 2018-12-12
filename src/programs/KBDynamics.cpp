@@ -174,7 +174,9 @@ int KBDynamics::run() {
 
         modeler.minimize_state();
 
-        // 1 billion
+        modeler.__system_topology.set_temperature();
+        modeler.__system_topology.set_box_vector();
+
         for (int i = 0; i < 100; i++) {
             std::cerr << i << " ";
             modeler.dynamics();

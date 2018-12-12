@@ -145,23 +145,10 @@ int PhysDynamics::run() {
 
         modeler.init_openmm_positions();
 
-        auto energies = modeler.__system_topology.get_energies();
-        std::cerr << "energies " << energies << std::endl;
-
         modeler.minimize_state();
-
-        energies = modeler.__system_topology.get_energies();
-        std::cerr << "energies " << energies << std::endl;
-
-        // init with minimized coordinates
-        /*statchem::molib::Molecule minimized_receptor(
-            protein, modeler.get_state(protein.get_atoms()));
-        statchem::molib::Molecule minimized_ligand(
-            ligand, modeler.get_state(ligand.get_atoms()));
-        minimized_receptor.undo_mm_specific();
-        statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
-                                            minimized_receptor, 0.000);
-        minimized_receptor.prepare_for_mm(__ffield, gridrec); */
+        
+        modeler.__system_topology.set_temperature();
+        modeler.__system_topology.set_box_vector();
 
         for (int i = 0; i < 100; i++) {
             modeler.dynamics();

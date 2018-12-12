@@ -881,7 +881,7 @@ double SystemTopology::get_kinetic_energy() {
     return context->getState(OpenMM::State::Energy, true).getKineticEnergy();
 }
 
-void SystemTopology::dump_box_vector() {
+void SystemTopology::print_box_vector_size() {
     OpenMM::Vec3 x, y, z;
     system->getDefaultPeriodicBoxVectors(x, y, z);
     std::cerr << "x " << x[0] << " " << x[1] << " " << x[2] << std::endl;
@@ -895,21 +895,28 @@ void SystemTopology::minimize(const double tolerance,
              << " iterations with a tolerence of " << tolerance << " "
              << __kbforce_idx << "\n";
     OpenMM::LocalEnergyMinimizer::minimize(*context, tolerance, max_iterations);
-
-    context->setVelocitiesToTemperature(300);
 }
 
 double SystemTopology::get_energies() {
     return get_potential_energy() + get_kinetic_energy();
 }
 
+void SystemTopology::set_temperature() {
+    context->setVelocitiesToTemperature(300);
+}
+
+void SystemTopology::set_box_vector() {
+    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
+}
+
+void SystemTopology::print_energies() {
+    cerr << "Potential Eneriges: " << get_potential_energy();
+    cerr << "\tKinetic Energies: " << get_kinetic_energy();
+    cerr << "\tTotal Energies: " << get_energies() << endl;
+}
+
+
 void SystemTopology::dynamics(const int steps) {
-
-    //std::cerr << "setting perdidic box vectors" << std::endl;
-    //Make sure box vector size is set correctly
-    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
-                                   OpenMM::Vec3(0, 0, 6));
-
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
 
@@ -922,12 +929,7 @@ void SystemTopology::dynamics(const int steps) {
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<seconds>(stop - start);
     cerr << " Time taken by function: " << duration.count() << " seconds\n";
-    cerr << "Potential Eneriges: " << get_potential_energy();
-    cerr << "\tKinetic Energies: " << get_kinetic_energy();
-    cerr << "\tTotal Energies: " << get_energies() << endl;
-
-    //dump_box_vector();
-
+    print_energies();
 }
 }  // namespace OMMIface
 }  // namespace statchem
