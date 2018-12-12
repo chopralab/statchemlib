@@ -391,10 +391,10 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
     std::set<int> used_atom_types;
 
-    //int num_types = 0;
     int position = 0;
     multimap<int, int> idatm_mapping;
 
+    //Map the idatm_type to the position
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
         idatm_mapping.insert(pair<int, int>(atom->idatm_type(), position++));
@@ -411,11 +411,10 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
+        //Set Periodic Boundary Conditions to 6 NM
         system->setDefaultPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0),
                                              OpenMM::Vec3(0, 6, 0),
                                              OpenMM::Vec3(0, 0, 6));
-        std::cerr << "system using pbc "
-                  << system->usesPeriodicBoundaryConditions() << std::endl;
 
         for (auto idatm1 = used_atom_types.begin();
              idatm1 != used_atom_types.end(); idatm1++) {
@@ -428,12 +427,15 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                 forcefield->setNonbondedMethod(
                     OpenMM::CustomNonbondedForce::CutoffPeriodic);
                 // forcefield->setCutoffDistance(__ffield->kb_cutoff);
+
+                //Cutoff distance needs to be less than half the size of the
+                //Periodic Box Size
                 forcefield->setCutoffDistance(2.99);
 
                 forcefield->addGlobalParameter("scale", scale);
 
                 // Cutoff / 10
-                // Replace cutoff with 1.5
+                // Replace cutoff with 1.5 NM
                 forcefield->addTabulatedFunction(
                     "kbpot", new OpenMM::Continuous1DFunction(
                                  __ffield->kb_force_type.at(*idatm1)
@@ -453,15 +455,13 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->addInteractionGroup(one, two);
 
+                //Create a bunch of empty particle parameters
                 for (const auto& atom : topology.atoms)
                     forcefield->addParticle(vector<double>());
 
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
                 forcefield->setNonbondedMethod(
                     OpenMM::CustomNonbondedForce::CutoffPeriodic);
-                std::cerr << "using pbc "
-                          << forcefield->usesPeriodicBoundaryConditions()
-                          << std::endl;
 
                 __kbforce_idx = system->addForce(forcefield);
             }
