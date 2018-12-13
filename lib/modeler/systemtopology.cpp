@@ -247,8 +247,10 @@ void SystemTopology::init_platform(const std::string& platform,
         properties["DeviceIndex"] = accelerators;
     }
 
-    //Available Platforms: Reference, CPU, CUDA, and OpenCL
-    context = new OpenMM::Context(*system, *integrator, OpenMM::Platform::getPlatformByName(platform), properties);
+    // Available Platforms: Reference, CPU, CUDA, and OpenCL
+    context = new OpenMM::Context(*system, *integrator,
+                                  OpenMM::Platform::getPlatformByName(platform),
+                                  properties);
 
     dbgmsg("Using OpenMM platform " << context->getPlatform().getName());
 }
@@ -389,7 +391,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
     int position = 0;
     multimap<int, int> idatm_mapping;
 
-    //Map the idatm_type to the position
+    // Map the idatm_type to the position
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
         idatm_mapping.insert(pair<int, int>(atom->idatm_type(), position++));
@@ -406,7 +408,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
-        //Set Periodic Boundary Conditions to 6 NM
+        // Set Periodic Boundary Conditions to 6 NM
         system->setDefaultPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0),
                                              OpenMM::Vec3(0, 6, 0),
                                              OpenMM::Vec3(0, 0, 6));
@@ -421,10 +423,12 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->setNonbondedMethod(
                     OpenMM::CustomNonbondedForce::CutoffPeriodic);
+
+                forcefield->setUseLongRangeCorrection(true);
                 // forcefield->setCutoffDistance(__ffield->kb_cutoff);
 
-                //Cutoff distance needs to be less than half the size of the
-                //Periodic Box Size
+                // Cutoff distance needs to be less than half the size of the
+                // Periodic Box Size
                 forcefield->setCutoffDistance(2.99);
 
                 forcefield->addGlobalParameter("scale", scale);
@@ -450,13 +454,11 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->addInteractionGroup(one, two);
 
-                //Create a bunch of empty particle parameters
+                // Create a bunch of empty particle parameters
                 for (const auto& atom : topology.atoms)
                     forcefield->addParticle(vector<double>());
 
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
-                forcefield->setNonbondedMethod(
-                    OpenMM::CustomNonbondedForce::CutoffPeriodic);
 
                 __kbforce_idx = system->addForce(forcefield);
             }
@@ -847,7 +849,7 @@ void SystemTopology::init_positions(const geometry::Point::Vec& crds) {
 }
 
 geometry::Point::Vec SystemTopology::get_positions_in_nm() {
-    //The true parameter is to enforce Periodic Boundary Conditions
+    // The true parameter is to enforce Periodic Boundary Conditions
     auto positions_in_nm =
         context->getState(OpenMM::State::Positions, true).getPositions();
     geometry::Point::Vec result;
@@ -862,7 +864,8 @@ geometry::Point::Vec SystemTopology::get_positions_in_nm() {
 }
 
 geometry::Point::Vec SystemTopology::get_forces() {
-    auto forces_in_nm = context->getState(OpenMM::State::Forces, true).getForces();
+    auto forces_in_nm =
+        context->getState(OpenMM::State::Forces, true).getForces();
     geometry::Point::Vec result;
     result.reserve(forces_in_nm.size());
     for (size_t i = 0; i < forces_in_nm.size(); ++i) {
@@ -906,7 +909,8 @@ void SystemTopology::set_temperature() {
 }
 
 void SystemTopology::set_box_vector() {
-    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
+    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
+                                   OpenMM::Vec3(0, 0, 6));
 }
 
 void SystemTopology::print_energies() {
@@ -914,7 +918,6 @@ void SystemTopology::print_energies() {
     cerr << "\tKinetic Energies: " << get_kinetic_energy();
     cerr << "\tTotal Energies: " << get_energies() << endl;
 }
-
 
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
