@@ -440,8 +440,6 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->addGlobalParameter("scale", scale);
 
-                cerr << "Cutoff " << cutoff << endl;
-
                 forcefield->addTabulatedFunction(
                     "kbpot", new OpenMM::Continuous1DFunction(
                                  __ffield->kb_force_type.at(*idatm1)
