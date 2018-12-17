@@ -860,8 +860,7 @@ geometry::Point::Vec SystemTopology::get_positions_in_nm() {
     // The true parameter is to enforce Periodic Boundary Conditions
     auto positions_in_nm =
         context->getState(OpenMM::State::Positions, true).getPositions();
-    geometry::Point::Vec result;
-    result.reserve(positions_in_nm.size());
+    geometry::Point::Vec result(positions_in_nm.size());
     for (size_t i = 0; i < positions_in_nm.size(); ++i) {
         result.emplace_back(geometry::Point(positions_in_nm[i][0],
                                             positions_in_nm[i][1],
