@@ -112,7 +112,8 @@ class SystemTopology {
 
     void init_particles(Topology& topology);
     void init_physics_based_force(Topology& topology);
-    void init_knowledge_based_force(Topology& topology, double scale);
+    void init_knowledge_based_force(Topology& topology, double scale,
+                                    double cutoff);
     void init_bonded(Topology& topology, const bool use_constraints);
     void init_positions(const geometry::Point::Vec& crds);
 
@@ -121,13 +122,16 @@ class SystemTopology {
 
     geometry::Point::Vec get_positions_in_nm();
     geometry::Point::Vec get_forces();
+
     double get_potential_energy();
     double get_kinetic_energy();
 
     void set_temperature();
     void set_box_vector();
+
+    // Print kinetic, potential, and total energies to stderr
     void print_energies();
-    
+
     void print_box_vector_size();
 
     void minimize(const double tolerance, const int max_iterations);

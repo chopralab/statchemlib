@@ -153,7 +153,7 @@ int KBDynamics::run() {
 
         statchem::OMMIface::Modeler modeler(
             __ffield, "kb", __scale, __mini_tol, __iter_max, false,
-            __dynamics_step_size, __temperature, __friction);
+            __dynamics_step_size, __temperature, __friction, __cutoff);
 
         modeler.set_num_steps_to_run(__dynamics_steps);
 

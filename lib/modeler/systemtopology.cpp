@@ -24,6 +24,7 @@
 #include "statchem/fileio/inout.hpp"
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
+#include "statchem/helper/help.hpp"
 #include "statchem/helper/logger.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/topology.hpp"
@@ -383,15 +384,18 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
 }
 
 void SystemTopology::init_knowledge_based_force(Topology& topology,
-                                                double scale) {
-    while (__kbforce_idx > -1) system->removeForce(__kbforce_idx--);
+                                                double scale, double cutoff) {
+    // while (__kbforce_idx > -1) system->removeForce(__kbforce_idx--);
 
     std::set<int> used_atom_types;
 
     int position = 0;
+
+    // First: atom type
+    // Second: position in OpenMM
     multimap<int, int> idatm_mapping;
 
-    // Map the idatm_type to the position
+    // Map the idatm_type to the position in OpenMM
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
         idatm_mapping.insert(pair<int, int>(atom->idatm_type(), position++));
@@ -415,8 +419,11 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
         for (auto idatm1 = used_atom_types.begin();
              idatm1 != used_atom_types.end(); idatm1++) {
-            auto idatm2 = idatm1;
-            for (; idatm2 != used_atom_types.end(); idatm2++) {
+            for (auto idatm2 = idatm1; idatm2 != used_atom_types.end();
+                 idatm2++) {
+                cerr << "idatm1 " << *idatm1 << " "
+                     << help::idatm_unmask[*idatm1] << "\nidatm2 " << *idatm2
+                     << " " << help::idatm_unmask[*idatm2] << endl;
                 // Create new CustomNonbondedForce
                 auto forcefield =
                     new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
@@ -433,14 +440,14 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->addGlobalParameter("scale", scale);
 
-                // Cutoff / 10
-                // Replace cutoff with 1.5 NM
+                cerr << "Cutoff " << cutoff << endl;
+
                 forcefield->addTabulatedFunction(
                     "kbpot", new OpenMM::Continuous1DFunction(
                                  __ffield->kb_force_type.at(*idatm1)
                                      .at(*idatm2)
                                      .potential,
-                                 0, 1.5));
+                                 0, cutoff / 10.0));
 
                 set<int> one, two;
                 auto type_1_iter = idatm_mapping.find(*idatm1);
@@ -461,6 +468,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
 
                 __kbforce_idx = system->addForce(forcefield);
+                cerr << "__kbforce_idx " << __kbforce_idx << endl << endl;
             }
         }
 
@@ -914,24 +922,22 @@ void SystemTopology::set_box_vector() {
 }
 
 void SystemTopology::print_energies() {
-    cerr << "Potential Eneriges: " << get_potential_energy();
-    cerr << "\tKinetic Energies: " << get_kinetic_energy();
-    cerr << "\tTotal Energies: " << get_energies() << endl;
+    cerr << "Potential Eneriges: " << get_potential_energy()
+         << "\tKinetic Energies: " << get_kinetic_energy()
+         << "\tTotal Energies: " << get_energies() << endl;
 }
 
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
 
-    // Get starting timepoint
     auto start = high_resolution_clock::now();
 
     integrator->step(steps);
 
-    // Get ending timepoint
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(stop - start);
-    cerr << " Time taken by function: " << duration.count() << " seconds\n";
+    auto length = duration_cast<seconds>(high_resolution_clock::now() - start);
+    cerr << " Time taken by function: " << length.count() << " seconds\n";
+
     print_energies();
 }
 }  // namespace OMMIface
