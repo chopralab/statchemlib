@@ -385,7 +385,10 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
 
 void SystemTopology::init_knowledge_based_force(Topology& topology,
                                                 double scale, double cutoff) {
-    // while (__kbforce_idx > -1) system->removeForce(__kbforce_idx--);
+    while (__kbforce_idx.size() > 0) {
+        system->removeForce(__kbforce_idx.back());
+        __kbforce_idx.pop_back();
+    }
 
     std::set<int> used_atom_types;
 
@@ -465,8 +468,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
 
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
 
-                __kbforce_idx = system->addForce(forcefield);
-                cerr << "__kbforce_idx " << __kbforce_idx << endl << endl;
+                __kbforce_idx.push_back(system->addForce(forcefield));
             }
         }
 
@@ -902,7 +904,7 @@ void SystemTopology::minimize(const double tolerance,
                               const int max_iterations) {
     log_note << "Minimizing with " << max_iterations
              << " iterations with a tolerence of " << tolerance << " "
-             << __kbforce_idx << "\n";
+             << __kbforce_idx.back() << "\n";
     OpenMM::LocalEnergyMinimizer::minimize(*context, tolerance, max_iterations);
 }
 

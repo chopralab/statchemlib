@@ -53,7 +53,7 @@ class SystemTopology {
 
     const ForceField* __ffield;
 
-    int __kbforce_idx;
+    std::vector<int> __kbforce_idx;
     std::vector<bool> masked;
     std::vector<double> masses;
 
@@ -91,8 +91,7 @@ class SystemTopology {
           integrator(nullptr),
           context(nullptr),
           __integrator_used(integrator_type::none),
-          __thermostat_idx(-1),
-          __kbforce_idx(-1) {}
+          __thermostat_idx(-1) {}
     ~SystemTopology();
     static void loadPlugins(const std::string& extra_dir = "");
     void mask(Topology& topology, const molib::Atom::Vec& atoms);
