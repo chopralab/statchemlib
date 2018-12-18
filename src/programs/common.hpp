@@ -130,7 +130,7 @@ inline po::options_description openmm_options() {
         "precision", po::value<std::string>()->default_value("single"),
         "Precision to run KBForce on. Options are single, mixed, double. "
         "Only works using CUDA or OpenCL platform")(
-        "accelerators", po::value<std::string>()->default_value("0"),
+        "gpus", po::value<std::string>()->default_value("0"),
         "Precision to run KBForce on. Options are single, mixed, double. "
         "Only works using CUDA or OpenCL platform");
 
@@ -142,7 +142,7 @@ inline void process_openmm_options(po::variables_map& vm, std::string& platform,
                                    std::string& accelerators) {
     platform = vm["platform"].as<std::string>();
     precision = vm["precision"].as<std::string>();
-    accelerators = vm["accelerators"].as<std::string>();
+    accelerators = vm["gpus"].as<std::string>();
 }
 
 inline po::options_description scoring_options() {
