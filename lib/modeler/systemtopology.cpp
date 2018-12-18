@@ -32,6 +32,9 @@
 #include <chrono>
 #include <map>
 #include <utility>  // std::pair, std::make_pair
+#include <iostream>
+#include <fstream>
+
 
 using namespace std;
 using namespace std::chrono;
@@ -935,9 +938,35 @@ void SystemTopology::dynamics(const int steps) {
     integrator->step(steps);
 
     auto length = duration_cast<seconds>(high_resolution_clock::now() - start);
-    cerr << " Time taken by function: " << length.count() << " seconds\n";
+    cerr << "Time taken by function: " << length.count() << " seconds\n";
 
     print_energies();
+    save_checkpoint();
 }
+
+void SystemTopology::load_checkpoint(const std :: string & checkpoint) {
+    try {
+        ifstream file;
+        file.open(checkpoint, ios::in | ios::binary);
+        context->loadCheckpoint(file);
+        file.close();
+    } catch (const std::exception& e) {
+        log_error << "Checkpoint failed to load " << e.what() << endl;
+        exit(1);
+    }
+}
+
+void SystemTopology::save_checkpoint() {
+    ofstream file;
+    string checkpoint = "checkpoint" + to_string(checkpoint_num % num_checkpoints) + ".chk";
+    cerr << "Writing checkpoint to file " << checkpoint << endl;
+
+    file.open(checkpoint, ios::out | ios::binary | ios::trunc);
+    context->createCheckpoint(file);
+    file.close();
+    checkpoint_num++;
+}
+
+
 }  // namespace OMMIface
 }  // namespace statchem

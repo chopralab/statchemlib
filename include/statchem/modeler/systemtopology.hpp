@@ -39,6 +39,9 @@ class SystemTopology {
     };
 
    private:
+    #define num_checkpoints 5
+    int checkpoint_num;
+    
     OpenMM::System* system;
     OpenMM::Integrator* integrator;
     OpenMM::Context* context;
@@ -127,6 +130,9 @@ class SystemTopology {
 
     void set_temperature();
     void set_box_vector();
+
+    void load_checkpoint(const std::string& checkpoint);
+    void save_checkpoint();
 
     // Print kinetic, potential, and total energies to stderr
     void print_energies();

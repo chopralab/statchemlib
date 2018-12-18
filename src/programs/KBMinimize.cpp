@@ -76,7 +76,7 @@ bool KBMinimize::process_options(int argc, char* argv[]) {
     }
 
     process_forcefield_options(vm, __ffield, __mini_tol, __iter_max);
-    process_openmm_options(vm, __platform, __precision, __accelerators);
+    process_openmm_options(vm, __platform, __precision, __accelerators, __checkpoint);
 
     return true;
 }

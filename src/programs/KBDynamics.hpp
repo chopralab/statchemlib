@@ -41,7 +41,7 @@ class KBDynamics : public Program {
     double __friction;
     int __dynamics_steps;
     double __dynamics_step_size;
-    std::string __platform, __precision, __accelerators;
+    std::string __platform, __precision, __accelerators, __checkpoint;
 };
 
 

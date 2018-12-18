@@ -94,12 +94,13 @@ bool KBDynamics::process_options(int argc, char* argv[]) {
     }
 
     process_forcefield_options(vm, __ffield, __mini_tol, __iter_max);
-    process_openmm_options(vm, __platform, __precision, __accelerators);
+    process_openmm_options(vm, __platform, __precision, __accelerators, __checkpoint);
 
     return true;
 }
 
 int KBDynamics::run() {
+
     if (__receptor_mols.get_idatm_types().size() == 1) {
         __receptor_mols.compute_idatm_type()
             .compute_hydrogen()
@@ -139,7 +140,7 @@ int KBDynamics::run() {
     __ffield.add_kb_forcefield(*__score, __dist_cut);
 
     statchem::OMMIface::SystemTopology::loadPlugins();
-    //__ligand_mols.size()
+    
     for (size_t i = 0; i < __ligand_mols.size(); ++i) {
         statchem::molib::Molecule& protein =
             __constant_receptor ? __receptor_mols[0] : __receptor_mols[i];
@@ -177,8 +178,16 @@ int KBDynamics::run() {
         modeler.__system_topology.set_temperature();
         modeler.__system_topology.set_box_vector();
 
-        for (int i = 0; i < 100; i++) {
-            std::cerr << i << " ";
+        // Load checkpoint
+        if(__checkpoint != "") {
+            std::cerr << "Loading from checkpoint\n";
+            modeler.__system_topology.load_checkpoint(__checkpoint);
+            __checkpoint = "";
+        }
+
+        for (size_t j = 0; j < 100; j++) {
+            std::cerr << "\nligand_mols " << i << std::endl;
+            std::cerr << "dynamics iteration " << j << std::endl;
             modeler.dynamics();
 
             // init with minimized coordinates

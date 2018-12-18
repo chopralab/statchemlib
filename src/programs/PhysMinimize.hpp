@@ -22,7 +22,7 @@ class PhysMinimize : public Program {
     statchem::OMMIface::ForceField __ffield;
     double __mini_tol;
     int __iter_max;
-    std::string __platform, __precision, __accelerators;
+    std::string __platform, __precision, __accelerators, __checkpoint;
 };
 
 
