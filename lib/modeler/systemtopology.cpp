@@ -946,10 +946,15 @@ void SystemTopology::dynamics(const int steps) {
 
 void SystemTopology::load_checkpoint(const std :: string & checkpoint) {
     try {
-        ifstream file;
-        file.open(checkpoint, ios::in | ios::binary);
-        context->loadCheckpoint(file);
-        file.close();
+        ifstream file(checkpoint, ios::in | ios::binary);
+        if(file.is_open()){
+            context->loadCheckpoint(file);
+            file.close();
+        }
+        else {
+            cerr << "Error could not open file: " << checkpoint << endl;
+            exit(1);
+        }
     } catch (const std::exception& e) {
         log_error << "Checkpoint failed to load " << e.what() << endl;
         exit(1);
@@ -957,14 +962,22 @@ void SystemTopology::load_checkpoint(const std :: string & checkpoint) {
 }
 
 void SystemTopology::save_checkpoint() {
-    ofstream file;
     string checkpoint = "checkpoint" + to_string(checkpoint_num % num_checkpoints) + ".chk";
     cerr << "Writing checkpoint to file " << checkpoint << endl;
-
-    file.open(checkpoint, ios::out | ios::binary | ios::trunc);
+    ofstream file(checkpoint, ios::out | ios::binary | ios::trunc);
     context->createCheckpoint(file);
     file.close();
+}
+
+void SystemTopology::save_checkpoint_candock(int x, int y)
+{
+    string checkpoint = "checkpoint" + to_string(checkpoint_num % num_checkpoints) + ".chk_candock";
+    ofstream file(checkpoint, ios::out | ios::trunc);
+    file << x;
+    file << "\n";
+    file << y;
     checkpoint_num++;
+    file.close();
 }
 
 

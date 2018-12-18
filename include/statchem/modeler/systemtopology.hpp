@@ -133,6 +133,7 @@ class SystemTopology {
 
     void load_checkpoint(const std::string& checkpoint);
     void save_checkpoint();
+    void save_checkpoint_candock(int x, int y);
 
     // Print kinetic, potential, and total energies to stderr
     void print_energies();

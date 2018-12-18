@@ -20,6 +20,7 @@ namespace fs = boost::filesystem;
 #include "programs/common.hpp"
 
 using namespace statchem_prog;
+using namespace std;
 
 template <>
 ProgramInfo statchem_prog::program_information<KBDynamics>() {
@@ -140,8 +141,31 @@ int KBDynamics::run() {
     __ffield.add_kb_forcefield(*__score, __dist_cut);
 
     statchem::OMMIface::SystemTopology::loadPlugins();
+
+    /* 
+        Need to hold track of the i and j variables in the for loops below.
+        OpenMM state does not do that for us, so we use a separte file to store the contents.
+    */
+    int x, y;
+    if(__checkpoint != "") {
+        std::string candock_checkpoint = __checkpoint + "_candock";
+        std::ifstream file(candock_checkpoint, ios::in);
+        if(file.is_open()){
+            file >> x;
+            file >> y;
+            file.close();
+        }
+        else {
+            cerr << "Error could not open file: " << candock_checkpoint << endl;
+            exit(1);
+        }
+    }
     
     for (size_t i = 0; i < __ligand_mols.size(); ++i) {
+
+        if(__checkpoint != "")
+            i = x;
+    
         statchem::molib::Molecule& protein =
             __constant_receptor ? __receptor_mols[0] : __receptor_mols[i];
         statchem::molib::Molecule& ligand = __ligand_mols[i];
@@ -178,17 +202,23 @@ int KBDynamics::run() {
         modeler.__system_topology.set_temperature();
         modeler.__system_topology.set_box_vector();
 
+
+        
+        size_t j = 0;
         // Load checkpoint
         if(__checkpoint != "") {
             std::cerr << "Loading from checkpoint\n";
             modeler.__system_topology.load_checkpoint(__checkpoint);
             __checkpoint = "";
-        }
 
-        for (size_t j = 0; j < 100; j++) {
+            j = y;
+        }
+        
+        for (; j < 100; j++) {
             std::cerr << "\nligand_mols " << i << std::endl;
             std::cerr << "dynamics iteration " << j << std::endl;
             modeler.dynamics();
+            modeler.__system_topology.save_checkpoint_candock(i, j);
 
             // init with minimized coordinates
             statchem::molib::Molecule minimized_receptor(
