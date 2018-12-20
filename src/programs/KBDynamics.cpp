@@ -228,7 +228,7 @@ int KBDynamics::run() {
 
             minimized_receptor.undo_mm_specific();
 
-            statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
+            statchem::fileio::print_complex_pdb_to_file(minimized_ligand,
                                                 minimized_receptor, 0.000);
 
             minimized_receptor.prepare_for_mm(__ffield, gridrec);
