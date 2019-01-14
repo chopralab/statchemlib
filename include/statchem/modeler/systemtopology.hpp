@@ -17,14 +17,14 @@ class HarmonicAngleForce;
 class HarmonicBondForce;
 class PeriodicTorsionForce;
 class CustomNonbondedForce;
-}
+}  // namespace OpenMM
 
 namespace statchem {
 
 namespace molib {
 class Atom;
 class Molecule;
-}
+}  // namespace molib
 
 namespace OMMIface {
 struct ForceField;
@@ -39,6 +39,9 @@ class SystemTopology {
     };
 
    private:
+    #define num_checkpoints 5
+    int checkpoint_num;
+    
     OpenMM::System* system;
     OpenMM::Integrator* integrator;
     OpenMM::Context* context;
@@ -53,7 +56,7 @@ class SystemTopology {
 
     const ForceField* __ffield;
 
-    int __kbforce_idx;
+    std::vector<int> __kbforce_idx;
     std::vector<bool> masked;
     std::vector<double> masses;
 
@@ -91,8 +94,7 @@ class SystemTopology {
           integrator(nullptr),
           context(nullptr),
           __integrator_used(integrator_type::none),
-          __thermostat_idx(-1),
-          __kbforce_idx(-1) {}
+          __thermostat_idx(-1) {}
     ~SystemTopology();
     static void loadPlugins(const std::string& extra_dir = "");
     void mask(Topology& topology, const molib::Atom::Vec& atoms);
@@ -112,7 +114,8 @@ class SystemTopology {
 
     void init_particles(Topology& topology);
     void init_physics_based_force(Topology& topology);
-    void init_knowledge_based_force(Topology& topology, double scale);
+    void init_knowledge_based_force(Topology& topology, double scale,
+                                    double cutoff);
     void init_bonded(Topology& topology, const bool use_constraints);
     void init_positions(const geometry::Point::Vec& crds);
 
@@ -121,12 +124,28 @@ class SystemTopology {
 
     geometry::Point::Vec get_positions_in_nm();
     geometry::Point::Vec get_forces();
+
     double get_potential_energy();
+    double get_kinetic_energy();
+
+    void set_temperature();
+    void set_box_vector();
+
+    void load_checkpoint(const std::string& checkpoint);
+    void save_checkpoint();
+    void save_checkpoint_candock(int x, int y);
+
+    // Print kinetic, potential, and total energies to stderr
+    void print_energies();
+
+    void print_box_vector_size();
+
     void minimize(const double tolerance, const int max_iterations);
     void dynamics(const int steps);
+    double get_energies();
     void set_forcefield(const ForceField& ffield) { __ffield = &ffield; }
 };
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem
 
 #endif

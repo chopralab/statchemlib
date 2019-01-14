@@ -79,7 +79,7 @@ bool PhysDynamics::process_options(int argc, char* argv[]) {
         process_starting_inputs(vm, __receptor_mols, __ligand_mols);
 
     process_forcefield_options(vm, __ffield, __mini_tol, __iter_max);
-    process_openmm_options(vm, __platform, __precision, __accelerators);
+    process_openmm_options(vm, __platform, __precision, __accelerators, __checkpoint);
 
     return true;
 }
@@ -145,18 +145,24 @@ int PhysDynamics::run() {
 
         modeler.init_openmm_positions();
 
-        modeler.dynamics();
+        modeler.minimize_state();
+        
+        modeler.__system_topology.set_temperature();
+        modeler.__system_topology.set_box_vector();
 
-        // init with minimized coordinates
-        statchem::molib::Molecule minimized_receptor(
-            protein, modeler.get_state(protein.get_atoms()));
-        statchem::molib::Molecule minimized_ligand(
-            ligand, modeler.get_state(ligand.get_atoms()));
+        for (int i = 0; i < 100; i++) {
+            modeler.dynamics();
 
-        minimized_receptor.undo_mm_specific();
-
-        statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
-                                            minimized_receptor, 0.000);
+            // init with minimized coordinates
+            statchem::molib::Molecule minimized_receptor(
+                protein, modeler.get_state(protein.get_atoms()));
+            statchem::molib::Molecule minimized_ligand(
+                ligand, modeler.get_state(ligand.get_atoms()));
+            minimized_receptor.undo_mm_specific();
+            statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
+                                                minimized_receptor, 0.000);
+            minimized_receptor.prepare_for_mm(__ffield, gridrec);
+        }
 
         __ffield.erase_topology(ligand);
     }

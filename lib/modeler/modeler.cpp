@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -37,7 +36,8 @@ ostream& operator<<(ostream& os, const vector<OpenMM::Vec3>& positions) {
 
 Modeler::Modeler(const ForceField& ffield, const string& fftype, double scale,
                  double tolerance, int max_iterations, bool use_constraints,
-                 double step_size_in_fs, double temperature, double friction)
+                 double step_size_in_fs, double temperature, double friction,
+                 double cutoff)
     : __ffield(&ffield),
       __fftype(fftype),
       __scale(scale),
@@ -46,7 +46,8 @@ Modeler::Modeler(const ForceField& ffield, const string& fftype, double scale,
       __use_constraints(use_constraints),
       __step_size_in_ps(step_size_in_fs * OpenMM::PsPerFs),
       __temperature(temperature),
-      __friction(friction) {}
+      __friction(friction),
+      __cutoff(cutoff) {}
 
 void Modeler::mask(const molib::Atom::Vec& atoms) {
     dbgmsg("Masking atoms " << atoms);
@@ -84,8 +85,8 @@ void Modeler::add_random_crds(const molib::Atom::Vec& atoms) {
 }
 
 /**
-         * Changes coordinates of atoms
-         */
+ * Changes coordinates of atoms
+ */
 
 geometry::Point::Vec Modeler::get_state(const molib::Atom::Vec& atoms) {
     const auto positions_in_nm = __system_topology.get_positions_in_nm();
@@ -133,7 +134,8 @@ void Modeler::init_openmm(const std::string& platform,
     __system_topology.init_bonded(__topology, __use_constraints);
 
     if (__fftype == "kb") {
-        __system_topology.init_knowledge_based_force(__topology, __scale);
+        __system_topology.init_knowledge_based_force(__topology, __scale,
+                                                     __cutoff);
     } else if (__fftype == "phy") {
         __system_topology.init_physics_based_force(__topology);
     } else if (__fftype == "none") {
@@ -150,5 +152,5 @@ void Modeler::init_openmm(const std::string& platform,
 double Modeler::potential_energy() {
     return __system_topology.get_potential_energy();
 }
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem

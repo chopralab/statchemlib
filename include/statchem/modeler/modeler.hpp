@@ -35,19 +35,21 @@ class Modeler {
     double __step_size_in_ps;
     double __temperature;
     double __friction;
+    double __cutoff;
 
     geometry::Point::Vec __positions;
     Topology __topology;
-    SystemTopology __system_topology;
 
     int __dynamics_steps;
 
    public:
+    SystemTopology __system_topology;
+
     Modeler(const ForceField& ffield, const std::string& fftype = "none",
             double scale = 1.0, double tolerance = 0.0001,
             int max_iterations = 100, bool use_constraints = false,
             double step_size_in_fs = 2.0, double temperature = 300.0,
-            double friction = 91.0);
+            double friction = 91.0, double cutoff = 6.0);
 
     void mask(const molib::Atom::Vec& atoms);
     void unmask(const molib::Atom::Vec& atoms);
@@ -86,7 +88,7 @@ class Modeler {
 
     const ForceField& get_forcefield() { return *__ffield; }
 };
-}
-}
+}  // namespace OMMIface
+}  // namespace statchem
 
 #endif

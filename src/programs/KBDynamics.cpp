@@ -20,6 +20,7 @@ namespace fs = boost::filesystem;
 #include "programs/common.hpp"
 
 using namespace statchem_prog;
+using namespace std;
 
 template <>
 ProgramInfo statchem_prog::program_information<KBDynamics>() {
@@ -42,8 +43,8 @@ bool KBDynamics::process_options(int argc, char* argv[]) {
     ff_min.add_options()("distance_cutoff",
                          po::value<double>(&__dist_cut)->default_value(6.0),
                          "Distance cutoff for intermolecular forces.")(
-                         "scale", po::value<double>(&__scale)->default_value(1.0),
-                         "Scale factor for the knowledge-based force.");
+        "scale", po::value<double>(&__scale)->default_value(1.0),
+        "Scale factor for the knowledge-based force.");
 
     auto dynamics_options = po::options_description("Dynamics Opetions");
     dynamics_options.add_options()(
@@ -94,12 +95,13 @@ bool KBDynamics::process_options(int argc, char* argv[]) {
     }
 
     process_forcefield_options(vm, __ffield, __mini_tol, __iter_max);
-    process_openmm_options(vm, __platform, __precision, __accelerators);
+    process_openmm_options(vm, __platform, __precision, __accelerators, __checkpoint);
 
     return true;
 }
 
 int KBDynamics::run() {
+
     if (__receptor_mols.get_idatm_types().size() == 1) {
         __receptor_mols.compute_idatm_type()
             .compute_hydrogen()
@@ -140,7 +142,30 @@ int KBDynamics::run() {
 
     statchem::OMMIface::SystemTopology::loadPlugins();
 
+    /* 
+        Need to hold track of the i and j variables in the for loops below.
+        OpenMM state does not do that for us, so we use a separte file to store the contents.
+    */
+    int x, y;
+    if(__checkpoint != "") {
+        std::string candock_checkpoint = __checkpoint + "_candock";
+        std::ifstream file(candock_checkpoint, ios::in);
+        if(file.is_open()){
+            file >> x;
+            file >> y;
+            file.close();
+        }
+        else {
+            cerr << "Error could not open file: " << candock_checkpoint << endl;
+            exit(1);
+        }
+    }
+    
     for (size_t i = 0; i < __ligand_mols.size(); ++i) {
+
+        if(__checkpoint != "")
+            i = x;
+    
         statchem::molib::Molecule& protein =
             __constant_receptor ? __receptor_mols[0] : __receptor_mols[i];
         statchem::molib::Molecule& ligand = __ligand_mols[i];
@@ -153,7 +178,7 @@ int KBDynamics::run() {
 
         statchem::OMMIface::Modeler modeler(
             __ffield, "kb", __scale, __mini_tol, __iter_max, false,
-            __dynamics_step_size, __temperature, __friction);
+            __dynamics_step_size, __temperature, __friction, __cutoff);
 
         modeler.set_num_steps_to_run(__dynamics_steps);
 
@@ -172,19 +197,42 @@ int KBDynamics::run() {
 
         modeler.init_openmm_positions();
 
-        modeler.dynamics();
+        modeler.minimize_state();
 
-        // init with minimized coordinates
-        statchem::molib::Molecule minimized_receptor(
-            protein, modeler.get_state(protein.get_atoms()));
-        statchem::molib::Molecule minimized_ligand(
-            ligand, modeler.get_state(ligand.get_atoms()));
+        modeler.__system_topology.set_temperature();
+        modeler.__system_topology.set_box_vector();
 
-        minimized_receptor.undo_mm_specific();
 
-        statchem::fileio::print_complex_pdb(std::cout, minimized_ligand,
-                                            minimized_receptor, 0.000);
+        
+        size_t j = 0;
+        // Load checkpoint
+        if(__checkpoint != "") {
+            std::cerr << "Loading from checkpoint\n";
+            modeler.__system_topology.load_checkpoint(__checkpoint);
+            __checkpoint = "";
 
+            j = y;
+        }
+        
+        for (; j < 100; j++) {
+            std::cerr << "\nligand_mols " << i << std::endl;
+            std::cerr << "dynamics iteration " << j << std::endl;
+            modeler.dynamics();
+            modeler.__system_topology.save_checkpoint_candock(i, j);
+
+            // init with minimized coordinates
+            statchem::molib::Molecule minimized_receptor(
+                protein, modeler.get_state(protein.get_atoms()));
+            statchem::molib::Molecule minimized_ligand(
+                ligand, modeler.get_state(ligand.get_atoms()));
+
+            minimized_receptor.undo_mm_specific();
+
+            statchem::fileio::print_complex_pdb_to_file(minimized_ligand,
+                                                minimized_receptor, 0.000);
+
+            minimized_receptor.prepare_for_mm(__ffield, gridrec);
+        }
         __ffield.erase_topology(ligand);
     }
 

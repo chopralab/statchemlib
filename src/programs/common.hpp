@@ -64,14 +64,14 @@ inline bool process_starting_inputs(po::variables_map& vm,
     } else {
         auto receptor = vm["receptor"].as<std::string>();
         statchem::parser::FileParser rpdb(
-            receptor, statchem::parser::pdb_read_options::all_models | 
-            statchem::parser::pdb_read_options::hydrogens);
+            receptor, statchem::parser::pdb_read_options::all_models |
+                          statchem::parser::pdb_read_options::hydrogens);
         rpdb.parse_molecule(rec_mols);
 
         auto ligand = vm["ligand"].as<std::string>();
         statchem::parser::FileParser lpdb(
             ligand, statchem::parser::pdb_read_options::all_models |
-            statchem::parser::pdb_read_options::hydrogens);
+                        statchem::parser::pdb_read_options::hydrogens);
         lpdb.parse_molecule(lig_mols);
 
         if (rec_mols.size() == 1) {
@@ -127,22 +127,26 @@ inline po::options_description openmm_options() {
     openmm.add_options()(
         "platform", po::value<std::string>()->default_value("CPU"),
         "Platform to run KBForce on. Options are CPU, GPU, and OpenCL.")(
-        "precision", po::value<std::string>()->default_value("double"),
+        "precision", po::value<std::string>()->default_value("single"),
         "Precision to run KBForce on. Options are single, mixed, double. "
         "Only works using CUDA or OpenCL platform")(
-        "accelerators", po::value<std::string>()->default_value("double"),
+        "gpus", po::value<std::string>()->default_value("0"),
         "Precision to run KBForce on. Options are single, mixed, double. "
-        "Only works using CUDA or OpenCL platform");
+        "Only works using CUDA or OpenCL platform")(
+        "checkpoint", po::value<std::string>()->default_value(""),
+        "Load checkpoint file to continue simulation");
 
     return openmm;
 }
 
 inline void process_openmm_options(po::variables_map& vm, std::string& platform,
                                    std::string& precision,
-                                   std::string& accelerators) {
+                                   std::string& accelerators,
+                                   std::string& checkpoint) {
     platform = vm["platform"].as<std::string>();
     precision = vm["precision"].as<std::string>();
-    accelerators = vm["accelerators"].as<std::string>();
+    accelerators = vm["gpus"].as<std::string>();
+    checkpoint = vm["checkpoint"].as<std::string>();
 }
 
 inline po::options_description scoring_options() {

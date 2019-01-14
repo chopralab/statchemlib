@@ -1,6 +1,5 @@
 #include "statchem/molib/atomtype.hpp"
 #include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -210,19 +209,27 @@ void compute_idatm_type(const Atom::Vec& atoms) {
             for (auto& a : residue) {
                 if (!mapped[&a]) {
                     string idatm_type = "???";
+
+                    // Check for H-C Bond
+                    if (a.element() == 1) {
+                        mapped[&a] = true;
+                        idatm_type = "H";
+                        for (auto& bond : a.get_bonds()) {
+                            if (bond->atom1().element() == 6 ||
+                                bond->atom2().element() == 6) {
+                                idatm_type = "HC";
+                                break;
+                            }
+                        }
+                        continue;
+                    }
+
                     // is it the N-terminal residue ?
                     if (residue.rest() == Residue::protein &&
                         &residue == &chain.first()) {
-                        if (a.atom_name() == "N")
-                            idatm_type = "N3+";
-                        else if (a.atom_name() == "H1" ||
-                                 a.atom_name() == "H2" ||
-                                 a.atom_name() == "H3" ||
-                                 a.atom_name() == "HN1" ||
-                                 a.atom_name() == "HN2" ||
-                                 a.atom_name() == "HN3")
-                            idatm_type = "H";
+                        if (a.atom_name() == "N") idatm_type = "N3+";
                     }
+
                     // is it C-terminal ?
                     if (residue.rest() == Residue::protein &&
                         &residue == &chain.last()) {
@@ -941,6 +948,6 @@ std::tuple<double, size_t, size_t, size_t> determine_lipinski(
     return std::make_tuple(molar_mass, h_bond_acceptors, h_bond_donor_NH,
                            h_bond_donor_OH);
 }
-}
-}
-}
+}  // namespace AtomType
+}  // namespace molib
+}  // namespace statchem

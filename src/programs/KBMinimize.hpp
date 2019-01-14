@@ -36,7 +36,7 @@ class KBMinimize : public Program {
     double __mini_tol;
     int __iter_max;
     double __dist_cut;
-    std::string __platform, __precision, __accelerators;
+    std::string __platform, __precision, __accelerators, __checkpoint;
 };
 
 

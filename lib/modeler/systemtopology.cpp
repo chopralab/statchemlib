@@ -12,23 +12,32 @@
 #include <openmm/PeriodicTorsionForce.h>
 #include <openmm/Platform.h>
 #include <openmm/Units.h>
+#include <openmm/Vec3.h>
 #include <openmm/VerletIntegrator.h>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <regex>
+#include "statchem/fileio/inout.hpp"
 #include "statchem/helper/debug.hpp"
 #include "statchem/helper/error.hpp"
+#include "statchem/helper/help.hpp"
 #include "statchem/helper/logger.hpp"
-#include "statchem/fileio/inout.hpp"
 #include "statchem/modeler/forcefield.hpp"
 #include "statchem/modeler/topology.hpp"
 
+#include <chrono>
+#include <map>
+#include <utility>  // std::pair, std::make_pair
+#include <iostream>
+#include <fstream>
+
+
 using namespace std;
+using namespace std::chrono;
 
 namespace statchem {
 namespace OMMIface {
@@ -36,7 +45,7 @@ namespace OMMIface {
 SystemTopology::~SystemTopology() {
     dbgmsg("calling destructor of SystemTopology");
     delete context;
-    //delete integrator;
+    // delete integrator;
     delete system;
 }
 
@@ -208,6 +217,7 @@ void SystemTopology::init_integrator(SystemTopology::integrator_type type,
                                      const double temperature_in_kelvin,
                                      const double friction_in_per_ps) {
     if (integrator != nullptr) throw Error("Integrator already initialized");
+    std::cerr << "type used " << type << std::endl;
 
     __integrator_used = type;
 
@@ -236,17 +246,15 @@ void SystemTopology::init_platform(const std::string& platform,
                                    const std::string& accelerators) {
     map<string, string> properties;
 
-    if (platform == "CUDA") {
-        properties["CudaPrecision"] = precision;
-        properties["CudaDeviceIndex"] = accelerators;
-    } else if (platform == "OpenCL") {
-        properties["OpenCLPrecision"] = precision;
-        properties["OpenCLDeviceIndex"] = accelerators;
+    if (platform == "CUDA" || platform == "OpenCL") {
+        properties["Precision"] = precision;
+        properties["DeviceIndex"] = accelerators;
     }
 
-    // Reference, CPU, CUDA, and OpenCL
-    OpenMM::Platform& platform2 = OpenMM::Platform::getPlatformByName(platform);
-    context = new OpenMM::Context(*system, *integrator, platform2, properties);
+    // Available Platforms: Reference, CPU, CUDA, and OpenCL
+    context = new OpenMM::Context(*system, *integrator,
+                                  OpenMM::Platform::getPlatformByName(platform),
+                                  properties);
 
     dbgmsg("Using OpenMM platform " << context->getPlatform().getName());
 }
@@ -324,7 +332,13 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     int warn = 0;
 
     OpenMM::NonbondedForce* nonbond = new OpenMM::NonbondedForce();
+    nonbond->setNonbondedMethod(OpenMM::NonbondedForce::NonbondedMethod::PME);
+    nonbond->setCutoffDistance(2.99);
     system->addForce(nonbond);
+    system->setDefaultPeriodicBoxVectors(
+        OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
+    std::cerr << "system using pbc " << system->usesPeriodicBoundaryConditions()
+              << std::endl;
 
     for (auto& patom : topology.atoms) {
         const molib::Atom& atom = *patom;
@@ -372,67 +386,28 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     }
 }
 
-void SystemTopology::init_knowledge_based_force(Topology& topology, double scale) {
-    if (__kbforce_idx != -1) system->removeForce(__kbforce_idx);
+void SystemTopology::init_knowledge_based_force(Topology& topology,
+                                                double scale, double cutoff) {
+    while (__kbforce_idx.size() > 0) {
+        system->removeForce(__kbforce_idx.back());
+        __kbforce_idx.pop_back();
+    }
 
     std::set<int> used_atom_types;
 
-    forcefield = new OpenMM::CustomNonbondedForce(
-        "kbpot( r / ffstep, idatm2 , idatm1); ");
-    forcefield->setNonbondedMethod(
-        OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
-    forcefield->setCutoffDistance(__ffield->kb_cutoff);
-    forcefield->addGlobalParameter("ffstep", __ffield->step);
-    forcefield->addPerParticleParameter("idatm");
+    int position = 0;
 
-    std::map<int, int> __idatm_to_internal;
-    std::map<int, int> __internal_to_idatm;
-    int num_types = 0;
+    // First: atom type
+    // Second: position in OpenMM
+    multimap<int, int> idatm_mapping;
+
+    // Map the idatm_type to the position in OpenMM
     for (const auto& atom : topology.atoms) {
         used_atom_types.insert(atom->idatm_type());
-        if (!__idatm_to_internal.count(atom->idatm_type())) {
-            __idatm_to_internal[atom->idatm_type()] = num_types;
-            __internal_to_idatm[num_types] = atom->idatm_type();
-            num_types++;
-        }
-
-        forcefield->addParticle(
-            {static_cast<double>(__idatm_to_internal[atom->idatm_type()])});
+        idatm_mapping.insert(pair<int, int>(atom->idatm_type(), position++));
     }
 
-    vector<double> table;
-    size_t xsize = 0, ysize = 0;
-
-    for (size_t i = 0; i < __idatm_to_internal.size(); i++) {
-        for (size_t j = 0; j < __idatm_to_internal.size(); j++) {
-            try {
-                const ForceField::KBType kb = __ffield->get_kb_force_type(
-                    __internal_to_idatm[i], __internal_to_idatm[j]);
-
-                // std::cerr << "size " << kb.potential.size() << std::endl;
-                if (ysize == 0) ysize = kb.potential.size();
-
-                if (ysize != kb.potential.size())
-                    throw Error("mismatching potential size");
-
-                xsize++;
-
-                for (size_t i = 0; i < kb.potential.size(); i++)
-                    table.push_back(kb.potential[i] * scale);
-            } catch (ParameterError& e) {
-                cerr << e.what() << endl;
-                cerr << "This is normal for atom types only present in the "
-                        "ligand"
-                     << endl;
-            }
-        }
-    }
     try {
-        forcefield->addTabulatedFunction(
-            "kbpot",
-            new OpenMM::Discrete3DFunction(ysize, __idatm_to_internal.size(),
-                                           __idatm_to_internal.size(), table));
-
         vector<pair<int, int>> bondPairs;
 
         for (auto& bond : topology.bonds) {
@@ -443,15 +418,70 @@ void SystemTopology::init_knowledge_based_force(Topology& topology, double scale
             bondPairs.push_back({idx1, idx2});
         }
 
-        forcefield->createExclusionsFromBonds(bondPairs, 4);
+        // Set Periodic Boundary Conditions to 6 NM
+        system->setDefaultPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0),
+                                             OpenMM::Vec3(0, 6, 0),
+                                             OpenMM::Vec3(0, 0, 6));
+
+        for (auto idatm1 = used_atom_types.begin();
+             idatm1 != used_atom_types.end(); idatm1++) {
+            for (auto idatm2 = idatm1; idatm2 != used_atom_types.end();
+                 idatm2++) {
+                cerr << "idatm1 " << *idatm1 << " "
+                     << help::idatm_unmask[*idatm1] << "\nidatm2 " << *idatm2
+                     << " " << help::idatm_unmask[*idatm2] << endl;
+                // Create new CustomNonbondedForce
+                auto forcefield =
+                    new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
+
+                forcefield->setNonbondedMethod(
+                    OpenMM::CustomNonbondedForce::CutoffPeriodic);
+
+                forcefield->setUseLongRangeCorrection(true);
+                // forcefield->setCutoffDistance(__ffield->kb_cutoff);
+
+                // Cutoff distance needs to be less than half the size of the
+                // Periodic Box Size
+                forcefield->setCutoffDistance(2.99);
+
+                forcefield->addGlobalParameter("scale", scale);
+
+                forcefield->addTabulatedFunction(
+                    "kbpot", new OpenMM::Continuous1DFunction(
+                                 __ffield->kb_force_type.at(*idatm1)
+                                     .at(*idatm2)
+                                     .potential,
+                                 0, cutoff / 10.0));
+
+                set<int> one, two;
+                auto type_1_iter = idatm_mapping.find(*idatm1);
+                auto type_2_iter = idatm_mapping.find(*idatm2);
+
+                for (; type_1_iter != idatm_mapping.end(); ++type_1_iter)
+                    one.insert(type_1_iter->second);
+
+                for (; type_2_iter != idatm_mapping.end(); ++type_2_iter)
+                    one.insert(type_2_iter->second);
+
+                forcefield->addInteractionGroup(one, two);
+
+                // Create a bunch of empty particle parameters
+                for (const auto& atom : topology.atoms)
+                    forcefield->addParticle(vector<double>());
+
+                forcefield->createExclusionsFromBonds(bondPairs, 4);
+
+                __kbforce_idx.push_back(system->addForce(forcefield));
+            }
+        }
+
+        // forcefield->createExclusionsFromBonds(bondPairs, 4);
     } catch (ParameterError& e) {
         cerr << e.what() << endl;
         cerr << "Exiting" << endl;
         exit(0);
     }
-
-    __kbforce_idx = system->addForce(forcefield);
-}
+}  // namespace OMMIface
 
 void SystemTopology::retype_amber_protein_atom_to_gaff(const molib::Atom& atom,
                                                        int& type) {
@@ -542,8 +572,9 @@ void SystemTopology::init_bonded(Topology& topology,
         try {
             btype = __ffield->get_bond_type(type1, type2);
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this bond)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this bond)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             btype = ForceField::BondType{atom1.get_bond(atom2).length(), 250000,
@@ -616,8 +647,9 @@ void SystemTopology::init_bonded(Topology& topology,
                                                              << atom3);
             atype = __ffield->get_angle_type(type1, type2, type3);
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this angle)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this angle)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             atype = ForceField::AngleType{
@@ -709,8 +741,9 @@ void SystemTopology::init_bonded(Topology& topology,
                 ++force_idx;
             }
         } catch (ParameterError& e) {
-            log_warning << e.what() << " (WARNINGS ARE NOT INCREASED) (using "
-                                       "default parameters for this dihedral)"
+            log_warning << e.what()
+                        << " (WARNINGS ARE NOT INCREASED) (using "
+                           "default parameters for this dihedral)"
                         << endl;
             // if everything else fails just constrain at something reasonable
             // cout <<  geometry::dihedral(atom1.crd(), atom2.crd(),
@@ -827,52 +860,126 @@ void SystemTopology::init_positions(const geometry::Point::Vec& crds) {
 }
 
 geometry::Point::Vec SystemTopology::get_positions_in_nm() {
-    auto positions_in_nm = context->getState(OpenMM::State::Positions).getPositions();
-    geometry::Point::Vec result;
-    result.reserve(positions_in_nm.size());
+    // The true parameter is to enforce Periodic Boundary Conditions
+    auto positions_in_nm =
+        context->getState(OpenMM::State::Positions, true).getPositions();
+    geometry::Point::Vec result(positions_in_nm.size());
     for (size_t i = 0; i < positions_in_nm.size(); ++i) {
-        result.emplace_back(
-            geometry::Point(positions_in_nm[i][0],
-                            positions_in_nm[i][1],
-                            positions_in_nm[i][2])
-        );
+        result.emplace_back(geometry::Point(positions_in_nm[i][0],
+                                            positions_in_nm[i][1],
+                                            positions_in_nm[i][2]));
     }
 
     return result;
 }
 
 geometry::Point::Vec SystemTopology::get_forces() {
-    auto forces_in_nm = context->getState(OpenMM::State::Forces).getForces();
+    auto forces_in_nm =
+        context->getState(OpenMM::State::Forces, true).getForces();
     geometry::Point::Vec result;
     result.reserve(forces_in_nm.size());
     for (size_t i = 0; i < forces_in_nm.size(); ++i) {
-        result.emplace_back(
-            geometry::Point(forces_in_nm[i][0],
-                            forces_in_nm[i][1],
-                            forces_in_nm[i][2])
-        );
+        result.emplace_back(geometry::Point(
+            forces_in_nm[i][0], forces_in_nm[i][1], forces_in_nm[i][2]));
     }
 
     return result;
 }
 
 double SystemTopology::get_potential_energy() {
-    return context->getState(OpenMM::State::Energy).getPotentialEnergy();
+    return context->getState(OpenMM::State::Energy, true).getPotentialEnergy();
+}
+
+double SystemTopology::get_kinetic_energy() {
+    return context->getState(OpenMM::State::Energy, true).getKineticEnergy();
+}
+
+void SystemTopology::print_box_vector_size() {
+    OpenMM::Vec3 x, y, z;
+    system->getDefaultPeriodicBoxVectors(x, y, z);
+    std::cerr << "x " << x[0] << " " << x[1] << " " << x[2] << std::endl;
+    std::cerr << "y " << y[0] << " " << y[1] << " " << y[2] << std::endl;
+    std::cerr << "z " << z[0] << " " << z[1] << " " << z[2] << std::endl;
 }
 
 void SystemTopology::minimize(const double tolerance,
                               const int max_iterations) {
     log_note << "Minimizing with " << max_iterations
              << " iterations with a tolerence of " << tolerance << " "
-             << __kbforce_idx << "\n";
+             << __kbforce_idx.back() << "\n";
     OpenMM::LocalEnergyMinimizer::minimize(*context, tolerance, max_iterations);
+}
+
+double SystemTopology::get_energies() {
+    return get_potential_energy() + get_kinetic_energy();
+}
+
+void SystemTopology::set_temperature() {
+    context->setVelocitiesToTemperature(300);
+}
+
+void SystemTopology::set_box_vector() {
+    context->setPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0),
+                                   OpenMM::Vec3(0, 0, 6));
+}
+
+void SystemTopology::print_energies() {
+    cerr << "Potential Eneriges: " << get_potential_energy()
+         << "\tKinetic Energies: " << get_kinetic_energy()
+         << "\tTotal Energies: " << get_energies() << endl;
 }
 
 void SystemTopology::dynamics(const int steps) {
     if (__integrator_used == integrator_type::verlet && __thermostat_idx == -1)
         log_warning << "No thermostat set, performing NVE dynamics" << endl;
 
+    auto start = high_resolution_clock::now();
+
     integrator->step(steps);
+
+    auto length = duration_cast<seconds>(high_resolution_clock::now() - start);
+    cerr << "Time taken by function: " << length.count() << " seconds\n";
+
+    print_energies();
+    save_checkpoint();
 }
+
+void SystemTopology::load_checkpoint(const std :: string & checkpoint) {
+    try {
+        ifstream file(checkpoint, ios::in | ios::binary);
+        if(file.is_open()){
+            context->loadCheckpoint(file);
+            file.close();
+        }
+        else {
+            cerr << "Error could not open file: " << checkpoint << endl;
+            exit(1);
+        }
+    } catch (const std::exception& e) {
+        log_error << "Checkpoint failed to load " << e.what() << endl;
+        exit(1);
+    }
 }
+
+void SystemTopology::save_checkpoint() {
+    string checkpoint = "checkpoint" + to_string(checkpoint_num % num_checkpoints) + ".chk";
+    cerr << "Writing checkpoint to file " << checkpoint << endl;
+    ofstream file(checkpoint, ios::out | ios::binary | ios::trunc);
+    context->createCheckpoint(file);
+    file.close();
 }
+
+void SystemTopology::save_checkpoint_candock(int x, int y)
+{
+    string checkpoint = "checkpoint" + to_string(checkpoint_num % num_checkpoints) + ".chk_candock";
+    ofstream file(checkpoint, ios::out | ios::trunc);
+    file << x;
+    file << "\n";
+    file << y;
+    checkpoint_num++;
+    file.close();
+}
+
+
+}  // namespace OMMIface
+}  // namespace statchem
