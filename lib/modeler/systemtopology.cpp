@@ -217,7 +217,6 @@ void SystemTopology::init_integrator(SystemTopology::integrator_type type,
                                      const double temperature_in_kelvin,
                                      const double friction_in_per_ps) {
     if (integrator != nullptr) throw Error("Integrator already initialized");
-    std::cerr << "type used " << type << std::endl;
 
     __integrator_used = type;
 
@@ -337,8 +336,6 @@ void SystemTopology::init_physics_based_force(Topology& topology) {
     system->addForce(nonbond);
     system->setDefaultPeriodicBoxVectors(
         OpenMM::Vec3(6, 0, 0), OpenMM::Vec3(0, 6, 0), OpenMM::Vec3(0, 0, 6));
-    std::cerr << "system using pbc " << system->usesPeriodicBoundaryConditions()
-              << std::endl;
 
     for (auto& patom : topology.atoms) {
         const molib::Atom& atom = *patom;
@@ -418,32 +415,20 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
             bondPairs.push_back({idx1, idx2});
         }
 
-        // Set Periodic Boundary Conditions to 6 NM
-        system->setDefaultPeriodicBoxVectors(OpenMM::Vec3(6, 0, 0),
-                                             OpenMM::Vec3(0, 6, 0),
-                                             OpenMM::Vec3(0, 0, 6));
-
         for (auto idatm1 = used_atom_types.begin();
              idatm1 != used_atom_types.end(); idatm1++) {
             for (auto idatm2 = idatm1; idatm2 != used_atom_types.end();
                  idatm2++) {
-                cerr << "idatm1 " << *idatm1 << " "
-                     << help::idatm_unmask[*idatm1] << "\nidatm2 " << *idatm2
-                     << " " << help::idatm_unmask[*idatm2] << endl;
                 // Create new CustomNonbondedForce
                 auto forcefield =
                     new OpenMM::CustomNonbondedForce("scale * kbpot(r)");
 
                 forcefield->setNonbondedMethod(
-                    OpenMM::CustomNonbondedForce::CutoffPeriodic);
-
-                forcefield->setUseLongRangeCorrection(true);
-                // forcefield->setCutoffDistance(__ffield->kb_cutoff);
+                    OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
 
                 // Cutoff distance needs to be less than half the size of the
                 // Periodic Box Size
-                forcefield->setCutoffDistance(2.99);
-
+                forcefield->setCutoffDistance(__ffield->kb_cutoff);
                 forcefield->addGlobalParameter("scale", scale);
 
                 forcefield->addTabulatedFunction(
@@ -461,7 +446,7 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                     one.insert(type_1_iter->second);
 
                 for (; type_2_iter != idatm_mapping.end(); ++type_2_iter)
-                    one.insert(type_2_iter->second);
+                    two.insert(type_2_iter->second);
 
                 forcefield->addInteractionGroup(one, two);
 
@@ -472,16 +457,97 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                 forcefield->createExclusionsFromBonds(bondPairs, 4);
 
                 __kbforce_idx.push_back(system->addForce(forcefield));
+                break;
             }
         }
-
-        // forcefield->createExclusionsFromBonds(bondPairs, 4);
     } catch (ParameterError& e) {
         cerr << e.what() << endl;
         cerr << "Exiting" << endl;
         exit(0);
     }
-}  // namespace OMMIface
+}
+
+void SystemTopology::init_knowledge_based_force_3d(Topology& topology,
+                                                double scale, double cutoff) {
+
+    forcefield = new OpenMM::CustomNonbondedForce(
+        "scale * kbpot( r, idatm1 , idatm2)");
+    forcefield->setNonbondedMethod(
+        OpenMM::CustomNonbondedForce::CutoffNonPeriodic);
+    forcefield->setCutoffDistance(__ffield->kb_cutoff);
+    forcefield->addGlobalParameter("scale", scale);
+    forcefield->addPerParticleParameter("idatm");
+
+    std::map<int, int> __idatm_to_internal;
+    std::map<int, int> __internal_to_idatm;
+    int num_types = 0;
+    for (const auto& atom : topology.atoms) {
+        if (!__idatm_to_internal.count(atom->idatm_type())) {
+            __idatm_to_internal[atom->idatm_type()] = num_types;
+            __internal_to_idatm[num_types] = atom->idatm_type();
+            num_types++;
+        }
+
+        forcefield->addParticle(
+            {static_cast<double>(__idatm_to_internal[atom->idatm_type()])});
+    }
+
+    vector<double> table;
+    size_t xsize = 0, ysize = 0;
+
+    for (size_t i = 0; i < __idatm_to_internal.size(); i++) {
+        for (size_t j = 0; j < __idatm_to_internal.size(); j++) {
+            try {
+                const ForceField::KBType kb = __ffield->get_kb_force_type(
+                    __internal_to_idatm[i], __internal_to_idatm[j]);
+
+                if (xsize == 0) xsize = kb.potential.size();
+
+                if (xsize != kb.potential.size())
+                    throw Error("mismatching potential size");
+
+                ysize++;
+
+                for (size_t i = 0; i < kb.potential.size(); i++)
+                    table.push_back(kb.potential[i]);
+            } catch (ParameterError& e) {
+                cerr << e.what() << endl;
+                cerr << "This is normal for atom types only present in the "
+                        "ligand"
+                     << endl;
+            }
+        }
+    }
+
+    try {
+        forcefield->addTabulatedFunction(
+            "kbpot",
+            new OpenMM::Continuous3DFunction(xsize,
+                                             __idatm_to_internal.size(),
+                                             __idatm_to_internal.size(), table,
+                                             0.0, cutoff / 10.0,
+                                             0.0, __idatm_to_internal.size() - 1.0,
+                                             0.0, __idatm_to_internal.size() - 1.0
+                                            ));
+
+        vector<pair<int, int>> bondPairs;
+
+        for (auto& bond : topology.bonds) {
+            const molib::Atom& atom1 = *bond.first;
+            const molib::Atom& atom2 = *bond.second;
+            const int idx1 = topology.get_index(atom1);
+            const int idx2 = topology.get_index(atom2);
+            bondPairs.push_back({idx1, idx2});
+        }
+
+        forcefield->createExclusionsFromBonds(bondPairs, 4);
+    } catch (ParameterError& e) {
+        cerr << e.what() << endl;
+        cerr << "Exiting" << endl;
+        exit(0);
+    }
+    system->addForce(forcefield);
+}
 
 void SystemTopology::retype_amber_protein_atom_to_gaff(const molib::Atom& atom,
                                                        int& type) {
@@ -862,8 +928,9 @@ void SystemTopology::init_positions(const geometry::Point::Vec& crds) {
 geometry::Point::Vec SystemTopology::get_positions_in_nm() {
     // The true parameter is to enforce Periodic Boundary Conditions
     auto positions_in_nm =
-        context->getState(OpenMM::State::Positions, true).getPositions();
-    geometry::Point::Vec result(positions_in_nm.size());
+        context->getState(OpenMM::State::Positions).getPositions();
+    geometry::Point::Vec result;
+    result.reserve(positions_in_nm.size());
     for (size_t i = 0; i < positions_in_nm.size(); ++i) {
         result.emplace_back(geometry::Point(positions_in_nm[i][0],
                                             positions_in_nm[i][1],
@@ -905,8 +972,7 @@ void SystemTopology::print_box_vector_size() {
 void SystemTopology::minimize(const double tolerance,
                               const int max_iterations) {
     log_note << "Minimizing with " << max_iterations
-             << " iterations with a tolerence of " << tolerance << " "
-             << __kbforce_idx.back() << "\n";
+             << " iterations with a tolerence of " << tolerance << "\n";
     OpenMM::LocalEnergyMinimizer::minimize(*context, tolerance, max_iterations);
 }
 

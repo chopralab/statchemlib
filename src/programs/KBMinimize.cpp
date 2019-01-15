@@ -140,6 +140,7 @@ int KBMinimize::run() {
         modeler.add_topology(ligand.get_atoms());
 
         modeler.init_openmm(__platform, __precision, __accelerators);
+        modeler.get_state(ligand.get_atoms());
 
         modeler.add_crds(protein.get_atoms(), protein.get_crds());
         modeler.add_crds(ligand.get_atoms(), ligand.get_crds());

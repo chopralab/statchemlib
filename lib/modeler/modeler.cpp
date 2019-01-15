@@ -134,7 +134,7 @@ void Modeler::init_openmm(const std::string& platform,
     __system_topology.init_bonded(__topology, __use_constraints);
 
     if (__fftype == "kb") {
-        __system_topology.init_knowledge_based_force(__topology, __scale,
+        __system_topology.init_knowledge_based_force_3d(__topology, __scale,
                                                      __cutoff);
     } else if (__fftype == "phy") {
         __system_topology.init_physics_based_force(__topology);
