@@ -504,7 +504,11 @@ void SystemTopology::init_knowledge_based_force_3d(Topology& topology,
                 if (xsize == 0) xsize = kb.potential.size();
 
                 if (xsize != kb.potential.size())
-                    throw Error("mismatching potential size");
+                    throw Error("mismatching potential size: Got " +
+                                std::to_string(kb.potential.size()) +
+                                " wanted " + std::to_string(xsize)  +
+                                " for " + std::string(help::idatm_unmask[__internal_to_idatm[i]]) +
+                                " and " + std::string(help::idatm_unmask[__internal_to_idatm[j]]));
 
                 ysize++;
 

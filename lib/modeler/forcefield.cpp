@@ -414,9 +414,11 @@ ForceField& ForceField::add_kb_forcefield(const score::KBFF& score,
         if (elem1 == gaff_lj.end() || elem2 == gaff_lj.end()) {
             std::cerr << "Atom types [" << help::idatm_unmask[atom_pair.first]
                         << ", " << help::idatm_unmask[atom_pair.second]
-                        << "] is not in KB or GAFF\n";
+                        << "] is not in KB or GAFF"
+                        << " adding " << dist_count << " 0s to replace it." << std::endl;
             this->kb_force_type[atom_pair.first][atom_pair.second].potential =
-                std::vector<double>(dist_count);
+                std::vector<double>(dist_count, 0);
+            continue;
         }
 
         log_warning << "Atom types [" << help::idatm_unmask[atom_pair.first]
