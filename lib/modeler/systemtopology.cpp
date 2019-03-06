@@ -431,12 +431,13 @@ void SystemTopology::init_knowledge_based_force(Topology& topology,
                 forcefield->setCutoffDistance(__ffield->kb_cutoff);
                 forcefield->addGlobalParameter("scale", scale);
 
+                auto& pot = __ffield->kb_force_type.at(*idatm1)
+                                                   .at(*idatm2)
+                                      .potential;
+
                 forcefield->addTabulatedFunction(
                     "kbpot", new OpenMM::Continuous1DFunction(
-                                 __ffield->kb_force_type.at(*idatm1)
-                                     .at(*idatm2)
-                                     .potential,
-                                 0, cutoff / 10.0));
+                                 pot, 0, (pot.size() - 1) * __ffield->step));
 
                 set<int> one, two;
                 auto type_1_iter = idatm_mapping.find(*idatm1);
@@ -529,7 +530,7 @@ void SystemTopology::init_knowledge_based_force_3d(Topology& topology,
             new OpenMM::Continuous3DFunction(xsize,
                                              __idatm_to_internal.size(),
                                              __idatm_to_internal.size(), table,
-                                             0.0, cutoff / 10.0,
+                                             0.0, (xsize - 1) * __ffield->step,
                                              0.0, __idatm_to_internal.size() - 1.0,
                                              0.0, __idatm_to_internal.size() - 1.0
                                             ));
