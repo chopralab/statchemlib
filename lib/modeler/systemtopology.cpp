@@ -518,8 +518,10 @@ void SystemTopology::init_knowledge_based_force_3d(Topology& topology,
             } catch (ParameterError& e) {
                 cerr << e.what() << endl;
                 cerr << "This is normal for atom types only present in the "
-                        "ligand"
+                        "ligand. Adding " << xsize << " zeros"
                      << endl;
+                for (size_t i = 0; i < xsize; i++)
+                    table.push_back(0.0);
             }
         }
     }
