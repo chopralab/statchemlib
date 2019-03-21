@@ -5471,6 +5471,43 @@
    <ExternalBond from="0"/>
    <ExternalBond from="15"/>
   </Residue>
+  <Residue name="MSE">
+   <Atom name="N" type="259"/>
+   <Atom name="H" type="260"/>
+   <Atom name="CA" type="261"/>
+   <Atom name="HA" type="262"/>
+   <Atom name="CB" type="263"/>
+   <Atom name="HB2" type="264"/>
+   <Atom name="HB3" type="264"/>
+   <Atom name="CG" type="265"/>
+   <Atom name="HG2" type="266"/>
+   <Atom name="HG3" type="266"/>
+   <Atom name="SE" type="267"/>
+   <Atom name="CE" type="268"/>
+   <Atom name="HE1" type="269"/>
+   <Atom name="HE2" type="269"/>
+   <Atom name="HE3" type="269"/>
+   <Atom name="C" type="270"/>
+   <Atom name="O" type="271"/>
+   <Bond from="0" to="1"/>
+   <Bond from="0" to="2"/>
+   <Bond from="2" to="3"/>
+   <Bond from="2" to="4"/>
+   <Bond from="2" to="15"/>
+   <Bond from="4" to="5"/>
+   <Bond from="4" to="6"/>
+   <Bond from="4" to="7"/>
+   <Bond from="7" to="8"/>
+   <Bond from="7" to="9"/>
+   <Bond from="7" to="10"/>
+   <Bond from="10" to="11"/>
+   <Bond from="11" to="12"/>
+   <Bond from="11" to="13"/>
+   <Bond from="11" to="14"/>
+   <Bond from="15" to="16"/>
+   <ExternalBond from="0"/>
+   <ExternalBond from="15"/>
+  </Residue>
   <Residue name="MG">
    <Atom name="MG" type="1976"/>
   </Residue>
