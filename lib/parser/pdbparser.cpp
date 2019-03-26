@@ -32,7 +32,7 @@ void FileParser::PdbParser::parse_molecule(Molecules& mols) {
     Residue* residue = nullptr;
     bool ter_found = false;
 
-    char chain_id_replacement = 'A';
+    char chain_id_replacement = 'z';
 
     for (string& line : pdb_raw) {
         if (line.compare(0, 4, "ATOM") == 0) {
