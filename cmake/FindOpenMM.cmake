@@ -4,10 +4,6 @@
 #
 # Find the native OPENMM includes and libraries.
 #
-# The GNU Scientific Library (OPENMM) is a numerical library for C and C++
-# programmers. It is free software under the GNU General Public
-# License.
-#
 # Imported Targets
 # ^^^^^^^^^^^^^^^^
 #
@@ -129,7 +125,7 @@ if( OPENMM_FOUND AND NOT TARGET OPENMM::openmm )
   if( EXISTS "${OPENMM_LIBRARY_DLL}" )
 
     # Windows systems with dll libraries.
-    add_library( OPENMM::openmm      SHARED IMPORTED )
+    add_library( OPENMM::openmm SHARED IMPORTED )
 
     # Windows with dlls, but only Release libraries.
     set_target_properties( OPENMM::openmm PROPERTIES
